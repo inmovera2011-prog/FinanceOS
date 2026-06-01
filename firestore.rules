@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────
+    function isAuth() { return request.auth != null; }
+    function myUid() { return request.auth.uid; }
+    function myRole() {
+      return get(/databases/$(database)/documents/users/$(myUid())).data.role;
+    }
+    function isBroker() { return isAuth() && myRole() == 'broker'; }
+    function isAgent() { return isAuth() && myRole() == 'agent'; }
+    function agentBrokerId(uid) {
+      return get(/databases/$(database)/documents/agents/$(uid)).data.brokerId;
+    }
+    function ownsAgent(uid) {
+      return isBroker() && agentBrokerId(uid) == myUid();
+    }
+
+    // ── /users/{uid} ─────────────────────────────────────
+    match /users/{uid} {
+      allow read:   if isAuth() && (myUid() == uid || isBroker());
+      allow create: if isAuth() && myUid() == uid;
+      allow update: if isAuth() && myUid() == uid;
+    }
+
+    // ── /brokers/{uid} ───────────────────────────────────
+    match /brokers/{uid} {
+      allow read, write: if isAuth() && myUid() == uid;
+    }
+
+    // ── /agents/{uid} ────────────────────────────────────
+    match /agents/{uid} {
+      allow read:   if isAuth() && (myUid() == uid || ownsAgent(uid));
+      allow write:  if isAuth() && ownsAgent(uid);
+    }
+
+    // ── /agents/{uid}/** (subcolecciones: accounts, transactions, goals, cards, settings) ──
+    match /agents/{uid}/{subcollection}/{docId} {
+      // El agente lee/escribe su propia data
+      allow read, write: if isAuth() && myUid() == uid;
+      // El broker de ese agente puede leer (para reportes)
+      allow read: if ownsAgent(uid);
+      // El broker puede escribir habilidades y configuración
+      allow write: if ownsAgent(uid) && subcollection == 'settings';
+    }
+
+    // ── /invites/{token} ─────────────────────────────────
+    match /invites/{token} {
+      allow read:   if isAuth();
+      allow create: if isBroker();
+      allow delete: if isBroker();
+    }
+  }
+}

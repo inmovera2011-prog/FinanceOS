@@ -1,0 +1,31 @@
+name: Deploy FinanceOS a Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Crea firebase-config.js en runtime usando el secret del repo
+      - name: Crear firebase-config.js desde secret
+        run: |
+          cat > js/firebase-config.js << 'EOF'
+          const FIREBASE_CONFIG = ${{ secrets.FIREBASE_CONFIG_JSON }};
+          export default FIREBASE_CONFIG;
+          EOF
+
+      - name: Deploy a Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken:            ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId:            live
+          projectId:            ${{ secrets.FIREBASE_PROJECT_ID }}

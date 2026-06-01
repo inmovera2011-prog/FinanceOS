@@ -1,0 +1,68 @@
+/* ═══════════════════════════════════════════════
+   FINANCEOS — Shared Styles
+   ═══════════════════════════════════════════════ */
+:root {
+  --bg:#0f172a; --surface:#1e293b; --surface2:#334155; --surface3:#475569;
+  --primary:#6366f1; --primary-d:#4f46e5; --primary-light:#6366f120;
+  --success:#10b981; --danger:#ef4444; --warning:#f59e0b; --info:#38bdf8;
+  --text:#f1f5f9; --text2:#94a3b8; --text3:#64748b;
+  --border:#334155; --r:14px; --r-sm:10px; --r-xs:6px;
+  --nav-h:64px; --top-h:56px; --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:var(--r-sm);border:none;cursor:pointer;font-size:.9rem;font-weight:600;transition:.15s;min-height:44px;text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-d)}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-google{background:#fff;color:#1f2937;border:1px solid #d1d5db}.btn-google:hover{background:#f9fafb}
+.btn-sm{padding:7px 14px;font-size:.82rem;min-height:36px}
+.btn-block{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:16px}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);padding:11px 14px;font-size:.9rem;outline:none;transition:.15s;-webkit-appearance:none;appearance:none;min-height:44px}
+input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+input::placeholder{color:var(--text3)}
+.input-icon{position:relative}
+.input-icon input{padding-left:40px}
+.input-icon .icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:1rem;pointer-events:none}
+.input-icon .icon-right{left:auto;right:12px;pointer-events:auto;cursor:pointer}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card-title{font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+
+/* ── ALERTS ── */
+.alert{padding:12px 16px;border-radius:var(--r-sm);margin-bottom:14px;font-size:.83rem;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+.alert-danger{background:#ef444412;border:1px solid #ef444440;color:#fca5a5}
+.alert-success{background:#10b98112;border:1px solid #10b98140;color:#6ee7b7}
+.alert-warning{background:#f59e0b12;border:1px solid #f59e0b40;color:#fcd34d}
+.alert-info{background:#38bdf812;border:1px solid #38bdf840;color:#7dd3fc}
+
+/* ── MISC ── */
+.text-center{text-align:center}
+.text-2{color:var(--text2)}.text-3{color:var(--text3)}
+.fs-sm{font-size:.82rem}.fs-xs{font-size:.72rem}
+.fw-bold{font-weight:700}.fw-800{font-weight:800}
+.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}
+.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-2{gap:8px}.gap-3{gap:12px}
+hr{border:none;border-top:1px solid var(--border);margin:18px 0}
+.hidden{display:none!important}
+.spinner{width:20px;height:20px;border:2px solid #ffffff40;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── LOADING SCREEN ── */
+#loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
+.loading-logo{font-size:1.8rem;font-weight:900;color:var(--primary);letter-spacing:-1px}
+.loading-logo span{color:var(--text2);font-weight:400}
+.loading-bar{width:120px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.loading-bar-fill{height:100%;background:var(--primary);border-radius:2px;animation:loadbar 1.5s ease-in-out infinite}
+@keyframes loadbar{0%{width:0;margin-left:0}50%{width:80%;margin-left:0}100%{width:0;margin-left:120px}}

@@ -1,0 +1,22 @@
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+js/firebase-config.js
+
+# Node
+node_modules/
+package-lock.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

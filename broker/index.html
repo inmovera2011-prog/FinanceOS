@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>FinanceOS — Broker</title>
+<link rel="stylesheet" href="../css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── BROKER SHELL ── */
+html,body{height:100%;overflow:hidden;display:flex;flex-direction:column}
+:root{--nav-h:64px;--top-h:56px;--safe-bottom:env(safe-area-inset-bottom,0px)}
+
+/* TOPBAR */
+#topbar{height:var(--top-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;z-index:100}
+#menu-btn{display:none;background:none;border:none;color:var(--text2);font-size:1.4rem;cursor:pointer;padding:4px 8px;border-radius:var(--r-xs)}
+.top-logo{font-size:1.05rem;font-weight:900;color:var(--primary)}
+.top-logo span{color:var(--text2);font-weight:400}
+.top-badge{background:#1d4ed820;color:#60a5fa;border:1px solid #1d4ed840;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+#topbar-title{flex:1;font-size:.95rem;font-weight:600;text-align:center}
+#user-menu{display:flex;align-items:center;gap:8px;cursor:pointer;margin-left:auto}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#fff}
+
+/* LAYOUT */
+#layout{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+#sidebar{width:230px;min-width:230px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;transition:transform .25s}
+.sidebar-logo{padding:16px 18px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-logo-text{font-size:1.1rem;font-weight:900;color:var(--primary)}
+.sidebar-logo-text span{color:var(--text2);font-weight:400}
+.sidebar-meta{font-size:.7rem;color:var(--text3);margin-top:2px}
+nav{flex:1;padding:8px}
+.nav-section{font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:12px 12px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);cursor:pointer;color:var(--text2);font-size:.85rem;font-weight:500;transition:.12s;margin-bottom:1px;min-height:40px;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:linear-gradient(90deg,#1d4ed8,#3b82f6);color:#fff;font-weight:600}
+.nav-item .ni{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+#sidebar-footer{padding:12px;border-top:1px solid var(--border);flex-shrink:0}
+
+/* CONTENT */
+#content-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#content{flex:1;overflow-y:auto;padding:20px;padding-bottom:20px}
+
+/* BOTTOM NAV mobile */
+#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav-h) + var(--safe-bottom));background:var(--surface);border-top:1px solid var(--border);padding-bottom:var(--safe-bottom);z-index:300;align-items:stretch}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:3px;padding:6px 4px;color:var(--text3);font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px;border:none;background:none}
+.bn-item.active,.bn-item:active{color:#3b82f6}
+.bn-icon{font-size:1.2rem;line-height:1}
+
+/* SIDEBAR OVERLAY mobile */
+#sidebar-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:199}
+#sidebar-overlay.open{display:block}
+
+/* ── BROKER SPECIFIC ── */
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;overflow:hidden}
+.kpi-label{font-size:.68rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-value{font-size:1.6rem;font-weight:900;line-height:1.1}
+.kpi-sub{font-size:.75rem;color:var(--text2);margin-top:4px}
+.kpi-icon{position:absolute;right:12px;top:12px;font-size:1.4rem;opacity:.7}
+.kpi.blue .kpi-value{color:var(--info)} .kpi.green .kpi-value{color:var(--success)}
+.kpi.amber .kpi-value{color:var(--warning)} .kpi.red .kpi-value{color:var(--danger)}
+.kpi.purple .kpi-value{color:var(--primary)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.agent-card{background:var(--surface2);border-radius:var(--r-sm);padding:14px;border-left:4px solid;cursor:pointer;transition:.12s;margin-bottom:10px}
+.agent-card:active{transform:scale(.98)}
+.health-score{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;flex-shrink:0}
+.progress-bar{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:.4s}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:.68rem;font-weight:700}
+.badge-green{background:#10b98122;color:#34d399}.badge-red{background:#ef444422;color:#f87171}
+.badge-amber{background:#f59e0b22;color:#fbbf24}.badge-blue{background:#38bdf822;color:#7dd3fc}
+.modal-overlay{display:none;position:fixed;inset:0;background:#000b;z-index:500;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r) var(--r) 0 0;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:40px;height:4px;background:var(--surface3);border-radius:2px;margin:12px auto 0}
+.modal-header{padding:14px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:.98rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text3);font-size:1.3rem;cursor:pointer}
+.modal-body{padding:16px 20px;padding-bottom:calc(20px + var(--safe-bottom))}
+.form-group{margin-bottom:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toggle{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--surface3);border-radius:12px;cursor:pointer;transition:.2s}
+.toggle-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--primary)}
+.toggle input:checked+.toggle-slider:before{transform:translateX(20px)}
+.hab-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.hab-toggle:last-child{border-bottom:none}
+.chart-wrap{position:relative}.chart-wrap.h220{height:220px}.chart-wrap.h260{height:260px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{text-align:left;padding:9px 10px;color:var(--text2);font-size:.68rem;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:10px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+.empty-state{text-align:center;padding:36px 16px;color:var(--text2)}
+.es-icon{font-size:2rem;margin-bottom:10px}
+@media(max-width:767px){
+  #menu-btn{display:block}
+  #sidebar{position:fixed;top:0;left:0;bottom:0;z-index:200;transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  #bottom-nav{display:flex}
+  #content{padding:14px;padding-bottom:calc(var(--nav-h)+16px)}
+  .grid-3,.grid-4{grid-template-columns:1fr 1fr}
+}
+@media(min-width:768px){
+  .modal-overlay{align-items:center}
+  .modal{border-radius:var(--r);width:500px;max-width:96vw}
+  @keyframes slideUp{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="loading-logo">Finance<span>OS</span></div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  <div class="fs-xs text-3">Cargando panel de broker...</div>
+</div>
+
+<!-- TOPBAR -->
+<div id="topbar" class="hidden">
+  <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+  <span class="top-logo">Finance<span>OS</span></span>
+  <span class="top-badge">Broker</span>
+  <span id="topbar-title"></span>
+  <div id="user-menu" onclick="openUserMenu()">
+    <div class="user-avatar" id="user-avatar">B</div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout" class="hidden">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">Finance<span>OS</span></div>
+      <div class="sidebar-meta" id="broker-office-label">Broker</div>
+    </div>
+    <nav id="nav">
+      <div class="nav-section">Panel</div>
+      <button class="nav-item active" data-page="dashboard"><span class="ni">📊</span> Dashboard</button>
+      <button class="nav-item" data-page="agentes"><span class="ni">👥</span> Mis Agentes</button>
+      <button class="nav-item" data-page="invitar"><span class="ni">➕</span> Invitar Agente</button>
+      <div class="nav-section">Gestión</div>
+      <button class="nav-item" data-page="habilidades"><span class="ni">⚡</span> Habilidades</button>
+      <button class="nav-item" data-page="reportes"><span class="ni">📈</span> Reportes del equipo</button>
+      <div class="nav-section">Cuenta</div>
+      <button class="nav-item" data-page="configuracion"><span class="ni">⚙️</span> Configuración</button>
+    </nav>
+    <div id="sidebar-footer">
+      <button class="btn btn-ghost btn-block btn-sm" onclick="handleLogout()">🚪 Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- CONTENT -->
+  <div id="content-wrap">
+    <div id="content"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bottom-nav" class="hidden">
+  <button class="bn-item active" data-page="dashboard"><span class="bn-icon">📊</span>Panel</button>
+  <button class="bn-item" data-page="agentes"><span class="bn-icon">👥</span>Agentes</button>
+  <button class="bn-item" data-page="invitar"><span class="bn-icon">➕</span>Invitar</button>
+  <button class="bn-item" data-page="habilidades"><span class="bn-icon">⚡</span>Habilidades</button>
+  <button class="bn-item" data-page="configuracion"><span class="bn-icon">⚙️</span>Config</button>
+</div>
+
+<!-- MODALES -->
+<div class="modal-overlay" id="modal-generic" onclick="if(event.target===this)closeModal('modal-generic')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title" id="modal-generic-title">—</span>
+      <button class="modal-close" onclick="closeModal('modal-generic')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-generic-body"></div>
+  </div>
+</div>
+
+<script type="module" src="../js/broker-app.js"></script>
+</body>
+</html>
