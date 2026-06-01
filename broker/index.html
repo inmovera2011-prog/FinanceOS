@@ -192,6 +192,23 @@ tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<script>
+// Captura errores de módulos (ej: firebase-config.js 404)
+window.addEventListener('unhandledrejection', (e) => {
+  const ls = document.getElementById('loading-screen');
+  if (!ls) return;
+  ls.innerHTML = `
+    <div style="text-align:center;padding:24px;max-width:380px">
+      <div style="font-size:2.5rem;margin-bottom:12px">⚙️</div>
+      <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:8px">Firebase no configurado</div>
+      <div style="color:#94a3b8;font-size:.82rem;line-height:1.6;margin-bottom:16px">
+        Falta <code style="color:#f59e0b">firebase-config.js</code>.<br>
+        Configurá el secret <code style="color:#f59e0b">FIREBASE_CONFIG_JSON</code> en GitHub y asegurate de que Pages use <strong style="color:#6366f1">GitHub Actions</strong> como fuente.
+      </div>
+      <a href="../" style="display:inline-block;padding:8px 20px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-size:.85rem">← Volver al inicio</a>
+    </div>`;
+});
+</script>
 <script type="module" src="../js/broker-app.js"></script>
 </body>
 </html>

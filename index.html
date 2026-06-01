@@ -145,10 +145,53 @@ body::after{content:'';position:fixed;bottom:-80px;right:-80px;width:300px;heigh
 </div>
 
 <script type="module">
-import { loginWithEmail, loginWithGoogle, registerBroker,
-         resetPassword, checkAuthAndRoute, routeByRole } from './js/auth.js';
+// ── Manejo global de errores de módulo ───────────────
+// Captura errores de imports fallidos (ej: firebase-config.js 404)
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Module error:', e.reason);
+  showFirebaseError(e.reason?.message || String(e.reason));
+});
+
+function showFirebaseError(detail) {
+  const ls = document.getElementById('loading-screen');
+  if (!ls) return;
+  ls.innerHTML = `
+    <div style="text-align:center;padding:24px;max-width:420px">
+      <div style="font-size:2.5rem;margin-bottom:12px">⚙️</div>
+      <div style="font-size:1.1rem;font-weight:700;color:#f1f5f9;margin-bottom:8px">
+        FinanceOS no está configurado
+      </div>
+      <div style="color:#94a3b8;font-size:.85rem;line-height:1.6;margin-bottom:20px">
+        Falta el archivo <code style="color:#f59e0b">firebase-config.js</code>.<br>
+        Para activarlo en GitHub Pages:
+      </div>
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px;text-align:left;font-size:.78rem;color:#94a3b8;line-height:1.8">
+        <strong style="color:#f1f5f9">1.</strong> Ir al repo en GitHub<br>
+        <strong style="color:#f1f5f9">2.</strong> Settings → Secrets → Actions<br>
+        <strong style="color:#f1f5f9">3.</strong> Crear secret: <code style="color:#f59e0b">FIREBASE_CONFIG_JSON</code><br>
+        <strong style="color:#f1f5f9">4.</strong> Settings → Pages → Source: <strong style="color:#6366f1">GitHub Actions</strong><br>
+        <strong style="color:#f1f5f9">5.</strong> Hacer un push para disparar el workflow
+      </div>
+      ${detail ? `<div style="margin-top:12px;font-size:.72rem;color:#475569">Detalle: ${detail}</div>` : ''}
+    </div>`;
+}
 
 // ── Al cargar: verificar sesión activa ───────────────
+let loginWithEmail, loginWithGoogle, registerBroker, resetPassword, checkAuthAndRoute, routeByRole;
+
+try {
+  const auth = await import('./js/auth.js');
+  loginWithEmail   = auth.loginWithEmail;
+  loginWithGoogle  = auth.loginWithGoogle;
+  registerBroker   = auth.registerBroker;
+  resetPassword    = auth.resetPassword;
+  checkAuthAndRoute = auth.checkAuthAndRoute;
+  routeByRole      = auth.routeByRole;
+} catch(err) {
+  showFirebaseError(err.message);
+  throw err; // detiene ejecución
+}
+
 const profile = await checkAuthAndRoute();
 if (profile) {
   routeByRole(profile);   // ya tiene sesión → redirige
