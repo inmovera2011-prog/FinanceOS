@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>FinanceOS — Crear tu cuenta</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.wrap{width:100%;max-width:440px}
+.logo{text-align:center;margin-bottom:28px}
+.logo-text{font-size:2rem;font-weight:900;color:var(--primary);letter-spacing:-1px}
+.logo-text span{color:var(--text2);font-weight:400}
+.logo-sub{font-size:.82rem;color:var(--text3);margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:26px 22px}
+/* Steps */
+.steps{display:flex;gap:0;margin-bottom:24px;position:relative}
+.steps::before{content:'';position:absolute;top:14px;left:14px;right:14px;height:2px;background:var(--surface2);z-index:0}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;background:var(--surface2);color:var(--text3);transition:.3s;border:2px solid var(--surface2)}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.step-dot.done{background:var(--success);color:#fff;border-color:var(--success)}
+.step-label{font-size:.65rem;font-weight:600;color:var(--text3);text-align:center;text-transform:uppercase;letter-spacing:.4px}
+.step-label.active{color:var(--primary)}
+/* Invite banner */
+.invite-banner{background:linear-gradient(135deg,#1e1b4b,#312e81);border:1px solid #4338ca40;border-radius:var(--r-sm);padding:16px;margin-bottom:20px;text-align:center}
+.invite-from{font-size:.75rem;color:#a5b4fc;margin-bottom:4px}
+.invite-name{font-size:1rem;font-weight:700;color:#fff}
+/* Habs preview */
+.habs-preview{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.hab-chip{background:#ffffff12;border-radius:20px;padding:4px 10px;font-size:.7rem;color:#c7d2fe}
+/* PW strength */
+.pw-bar{height:3px;border-radius:2px;margin-top:6px;background:var(--surface3);transition:.3s}
+.pw-bar.weak{background:var(--danger);width:33%}
+.pw-bar.ok{background:var(--warning);width:66%}
+.pw-bar.strong{background:var(--success);width:100%}
+/* Show pass */
+.pass-wrap{position:relative}
+.pass-wrap input{padding-right:44px}
+.show-pass{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:.9rem;padding:4px}
+/* Success screen */
+.success-screen{text-align:center;padding:16px 0}
+.success-icon{font-size:3.5rem;margin-bottom:16px;animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(0)}80%{transform:scale(1.1)}100%{transform:scale(1)}}
+body::before{content:'';position:fixed;top:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,#6366f115,transparent 70%);border-radius:50%;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loading-logo">Finance<span>OS</span></div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  <div class="fs-xs text-3" id="loading-msg">Verificando invitación...</div>
+</div>
+
+<div class="wrap hidden" id="main-wrap">
+
+  <div class="logo">
+    <div class="logo-text">Finance<span>OS</span></div>
+    <div class="logo-sub" id="logo-sub">Creá tu cuenta de agente</div>
+  </div>
+
+  <div class="card" id="main-card">
+
+    <!-- STEPS -->
+    <div class="steps" id="steps-bar">
+      <div class="step"><div class="step-dot active" id="dot-1">1</div><div class="step-label active" id="lbl-1">Verificar</div></div>
+      <div class="step"><div class="step-dot" id="dot-2">2</div><div class="step-label" id="lbl-2">Tu perfil</div></div>
+      <div class="step"><div class="step-dot" id="dot-3">3</div><div class="step-label" id="lbl-3">Contraseña</div></div>
+    </div>
+
+    <div id="alert-area"></div>
+    <div id="step-content"></div>
+
+  </div>
+
+  <div class="footer-note text-center fs-xs text-3 mt-3">
+    ¿Ya tenés cuenta? <a href="/" style="color:var(--primary)">Iniciá sesión aquí</a>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp }                    from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword,
+         onAuthStateChanged, setPersistence,
+         browserLocalPersistence }          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, doc, getDoc,
+         setDoc, serverTimestamp }          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import FIREBASE_CONFIG                      from './js/firebase-config.js';
+
+// ── Init Firebase ─────────────────────────────────────
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+await setPersistence(auth, browserLocalPersistence);
+
+// ── Estado ────────────────────────────────────────────
+let invite  = null;   // datos del invite de Firestore
+let token   = null;
+let step    = 1;
+let formData = {};    // acumula datos entre pasos
+
+// ── Helpers UI ────────────────────────────────────────
+const $   = id => document.getElementById(id);
+const setContent = html => { $('step-content').innerHTML = html; };
+const showAlert  = (msg, type='danger') => {
+  $('alert-area').innerHTML = `<div class="alert alert-${type} mb-3">${msg}</div>`;
+};
+const clearAlert = () => { $('alert-area').innerHTML = ''; };
+
+function setStep(n) {
+  step = n;
+  [1,2,3].forEach(i => {
+    const dot = $(`dot-${i}`); const lbl = $(`lbl-${i}`);
+    dot.className = 'step-dot' + (i < n ? ' done' : i===n ? ' active' : '');
+    dot.textContent = i < n ? '✓' : i;
+    lbl.className   = 'step-label' + (i===n ? ' active' : '');
+  });
+}
+
+// ── STEP 1: Verificar token ───────────────────────────
+async function verifyToken() {
+  token = new URLSearchParams(window.location.search).get('token');
+
+  if (!token) {
+    showStep1Error('Link inválido. Pedile al broker que te reenvíe la invitación.');
+    return;
+  }
+
+  try {
+    const snap = await getDoc(doc(db, 'invites', token));
+    if (!snap.exists()) {
+      showStep1Error('Esta invitación no existe o fue eliminada.');
+      return;
+    }
+
+    invite = snap.data();
+
+    if (invite.used) {
+      showStep1Error('Esta invitación ya fue utilizada. Si es un error, contactá a tu broker.');
+      return;
+    }
+
+    if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
+      showStep1Error('Esta invitación venció. Pedile al broker que genere una nueva.');
+      return;
+    }
+
+    // Verificar si el usuario ya está logueado
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        // Ya tiene sesión → redirigir al dashboard
+        window.location.href = '/agent/';
+        return;
+      }
+      // Todo OK → mostrar UI
+      $('loading-screen').classList.add('hidden');
+      $('main-wrap').classList.remove('hidden');
+      renderStep1();
+    });
+
+  } catch(e) {
+    showStep1Error('Error al verificar: ' + e.message);
+  }
+}
+
+function showStep1Error(msg) {
+  $('loading-screen').classList.add('hidden');
+  $('main-wrap').classList.remove('hidden');
+  $('steps-bar').classList.add('hidden');
+  setContent(`
+    <div class="text-center" style="padding:20px 0">
+      <div style="font-size:2.5rem;margin-bottom:12px">❌</div>
+      <div class="fw-bold mb-2">Invitación inválida</div>
+      <div class="fs-sm text-2 mb-4">${msg}</div>
+      <a href="/" class="btn btn-primary">Volver al inicio</a>
+    </div>`);
+}
+
+// ── STEP 1 UI: Confirmar invitación ──────────────────
+function renderStep1() {
+  const { HABILIDADES } = window._consts || {};
+  const habLabels = ['📋 Presupuesto','💳 Movimientos','🛡️ Fondo Emerg.','💳 Crédito','📊 Reportes','📈 Inversiones','🎓 Educación'];
+  const habKeys   = ['presupuesto','movimientos','objetivos','credito','reportes','inversiones','educacion'];
+
+  const habChips = habKeys
+    .filter(k => invite.habs?.[k])
+    .map((k,i) => `<div class="hab-chip">${habLabels[i]}</div>`)
+    .join('');
+
+  setContent(`
+    <div class="invite-banner mb-4">
+      <div class="invite-from">Invitación de broker</div>
+      <div class="invite-name">${invite.brokerName || 'Tu broker'}</div>
+      <div class="fs-xs" style="color:#a5b4fc;margin-top:4px">Para: ${invite.agentEmail}</div>
+      ${habChips ? `<div class="habs-preview">${habChips}</div>` : ''}
+    </div>
+    <p class="fs-sm text-2 mb-4">Tu broker te invitó a usar <strong>FinanceOS</strong> para gestionar tus finanzas. Completá el registro en 2 pasos.</p>
+    <button class="btn btn-primary btn-block" onclick="goStep2()">Aceptar invitación →</button>
+    <button class="btn btn-ghost btn-block mt-2" onclick="window.location='/'">Rechazar</button>
+  `);
+  setStep(1);
+}
+
+// ── STEP 2: Datos personales ──────────────────────────
+window.goStep2 = () => {
+  clearAlert();
+  setStep(2);
+  setContent(`
+    <p class="fs-sm text-2 mb-4">Confirmá tus datos. El email ya está definido por la invitación.</p>
+    <form onsubmit="submitStep2(event)">
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input id="reg-name" type="text" placeholder="Ej: Carlos Ruiz"
+          value="${formData.name || ''}" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" value="${invite.agentEmail}" disabled
+          style="opacity:.6;cursor:not-allowed">
+      </div>
+      <div class="form-group">
+        <label>Teléfono (opcional)</label>
+        <input id="reg-phone" type="tel" placeholder="+54 11 1234-5678"
+          value="${formData.phone || ''}" inputmode="tel">
+      </div>
+      <button class="btn btn-primary btn-block mt-3" type="submit">Siguiente →</button>
+    </form>
+  `);
+};
+
+window.submitStep2 = (e) => {
+  e.preventDefault();
+  const name  = $('reg-name').value.trim();
+  const phone = $('reg-phone').value.trim();
+  if (!name) { showAlert('Ingresá tu nombre.'); return; }
+  formData.name  = name;
+  formData.phone = phone;
+  clearAlert();
+  goStep3();
+};
+
+// ── STEP 3: Contraseña ────────────────────────────────
+function goStep3() {
+  setStep(3);
+  setContent(`
+    <p class="fs-sm text-2 mb-4">Elegí una contraseña segura para tu cuenta.</p>
+    <form onsubmit="submitStep3(event)">
+      <div class="form-group">
+        <label>Contraseña</label>
+        <div class="pass-wrap">
+          <input id="reg-pass" type="password" placeholder="Mínimo 8 caracteres"
+            autocomplete="new-password" minlength="8"
+            oninput="checkStrength(this.value)" required>
+          <button type="button" class="show-pass" onclick="togglePass('reg-pass',this)">👁</button>
+        </div>
+        <div class="pw-bar" id="pw-bar"></div>
+        <div class="fs-xs text-2 mt-1" id="pw-hint">Usá letras, números y un símbolo para mayor seguridad.</div>
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <div class="pass-wrap">
+          <input id="reg-pass2" type="password" placeholder="Repetí la contraseña"
+            autocomplete="new-password" required>
+          <button type="button" class="show-pass" onclick="togglePass('reg-pass2',this)">👁</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block mt-3" type="submit" id="btn-register">
+        Crear mi cuenta
+      </button>
+    </form>
+  `);
+}
+
+window.checkStrength = (v) => {
+  const bar  = $('pw-bar');
+  const hint = $('pw-hint');
+  if (!v.length) { bar.className='pw-bar'; hint.textContent=''; return; }
+  const strong = v.length>=8 && /[A-Z]/.test(v) && /[0-9]/.test(v) && /[^A-Za-z0-9]/.test(v);
+  const ok     = v.length>=8 && (/[A-Z]/.test(v) || /[0-9]/.test(v));
+  bar.className = 'pw-bar ' + (strong?'strong':ok?'ok':'weak');
+  hint.textContent = strong?'✅ Contraseña fuerte':ok?'⚠️ Aceptable, podría ser más segura':'❌ Muy débil';
+};
+
+window.togglePass = (id, btn) => {
+  const input = $(id);
+  input.type = input.type==='password' ? 'text' : 'password';
+  btn.textContent = input.type==='password' ? '👁' : '🙈';
+};
+
+window.submitStep3 = async (e) => {
+  e.preventDefault();
+  const pass  = $('reg-pass').value;
+  const pass2 = $('reg-pass2').value;
+
+  if (pass !== pass2)  { showAlert('Las contraseñas no coinciden.'); return; }
+  if (pass.length < 8) { showAlert('La contraseña debe tener al menos 8 caracteres.'); return; }
+
+  const btn = $('btn-register');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Creando cuenta...';
+  clearAlert();
+
+  try {
+    // 1. Crear cuenta en Firebase Auth
+    const cred = await createUserWithEmailAndPassword(auth, invite.agentEmail, pass);
+    const uid  = cred.user.uid;
+
+    // 2. Crear perfil en /users/{uid}
+    await setDoc(doc(db, 'users', uid), {
+      name:      formData.name,
+      email:     invite.agentEmail,
+      role:      'agent',
+      brokerId:  invite.brokerId,
+      createdAt: serverTimestamp(),
+    });
+
+    // 3. Crear perfil en /agents/{uid}
+    await setDoc(doc(db, 'agents', uid), {
+      name:      formData.name,
+      email:     invite.agentEmail,
+      phone:     formData.phone || '',
+      brokerId:  invite.brokerId,
+      situation: invite.situation || 'nuevo',
+      status:    'activo',
+      joinDate:  new Date().toISOString().slice(0,10),
+      createdAt: serverTimestamp(),
+    });
+
+    // 4. Guardar habilidades en /agents/{uid}/settings/habilidades
+    await setDoc(doc(db, 'agents', uid, 'settings', 'habilidades'), {
+      ...(invite.habs || {}),
+      updatedAt: serverTimestamp(),
+    });
+
+    // 5. Settings iniciales
+    await setDoc(doc(db, 'agents', uid, 'settings', 'main'), {
+      auditPhaseActive:  true,
+      auditPhaseStart:   new Date().toISOString().slice(0,10),
+      payYourselfFirst:  20,
+      currency:          'ARS',
+      needs:             50,
+      wants:             30,
+      savings:           20,
+      emergencyMonths:   6,
+    });
+
+    // 6. Marcar invite como usado
+    await setDoc(doc(db, 'invites', token), { used: true, usedAt: serverTimestamp(), agentUid: uid }, { merge: true });
+
+    // 7. Mostrar éxito y redirigir
+    showSuccess(formData.name);
+
+  } catch(err) {
+    console.error(err);
+    btn.disabled = false;
+    btn.textContent = 'Crear mi cuenta';
+    const msgs = {
+      'auth/email-already-in-use': 'Ese email ya tiene una cuenta. <a href="/" style="color:var(--info)">Iniciá sesión</a>.',
+      'auth/weak-password':        'La contraseña es muy débil. Usá al menos 8 caracteres.',
+      'auth/network-request-failed': 'Sin conexión. Verificá tu internet.',
+    };
+    showAlert(msgs[err.code] || `Error: ${err.message}`);
+  }
+};
+
+// ── SUCCESS ───────────────────────────────────────────
+function showSuccess(name) {
+  $('steps-bar').classList.add('hidden');
+  setContent(`
+    <div class="success-screen">
+      <div class="success-icon">🎉</div>
+      <div class="fw-800" style="font-size:1.2rem;margin-bottom:8px">¡Bienvenido a FinanceOS, ${name.split(' ')[0]}!</div>
+      <div class="fs-sm text-2 mb-4">Tu cuenta fue creada con éxito. Ahora podés empezar a registrar tus ingresos y gastos.</div>
+      <div class="alert alert-info mb-4 text-center" style="justify-content:center">
+        💡 Tu broker habilitó los módulos correctos para tu situación. Podés pedirle que active más cuando los necesites.
+      </div>
+      <button class="btn btn-primary btn-block" onclick="goToDashboard()" id="btn-go">
+        Ir a mi dashboard →
+      </button>
+    </div>`);
+
+  // Auto-redirect después de 3 segundos
+  setTimeout(() => {
+    window.location.href = '/agent/';
+  }, 3000);
+}
+
+window.goToDashboard = () => { window.location.href = '/agent/'; };
+
+// ── KICK OFF ─────────────────────────────────────────
+verifyToken();
+</script>
+</body>
+</html>
