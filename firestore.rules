@@ -2,54 +2,95 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Helpers ──────────────────────────────────────────
-    function isAuth() { return request.auth != null; }
-    function myUid() { return request.auth.uid; }
-    function myRole() {
-      return get(/databases/$(database)/documents/users/$(myUid())).data.role;
-    }
-    function isBroker() { return isAuth() && myRole() == 'broker'; }
-    function isAgent() { return isAuth() && myRole() == 'agent'; }
-    function agentBrokerId(uid) {
-      return get(/databases/$(database)/documents/agents/$(uid)).data.brokerId;
-    }
-    function ownsAgent(uid) {
-      return isBroker() && agentBrokerId(uid) == myUid();
+    // Helpers basicos
+    function signedIn() {
+      return request.auth != null;
     }
 
-    // ── /users/{uid} ─────────────────────────────────────
-    match /users/{uid} {
-      allow read:   if isAuth() && (myUid() == uid || isBroker());
-      allow create: if isAuth() && myUid() == uid;
-      allow update: if isAuth() && myUid() == uid;
+    function uid() {
+      return request.auth.uid;
     }
 
-    // ── /brokers/{uid} ───────────────────────────────────
-    match /brokers/{uid} {
-      allow read, write: if isAuth() && myUid() == uid;
+    // Lee el rol del usuario autenticado desde /users/{uid}
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
 
-    // ── /agents/{uid} ────────────────────────────────────
-    match /agents/{uid} {
-      allow read:   if isAuth() && (myUid() == uid || ownsAgent(uid));
-      allow write:  if isAuth() && ownsAgent(uid);
+    function isBroker() {
+      return signedIn() && userRole() == 'broker';
     }
 
-    // ── /agents/{uid}/** (subcolecciones: accounts, transactions, goals, cards, settings) ──
-    match /agents/{uid}/{subcollection}/{docId} {
-      // El agente lee/escribe su propia data
-      allow read, write: if isAuth() && myUid() == uid;
-      // El broker de ese agente puede leer (para reportes)
-      allow read: if ownsAgent(uid);
-      // El broker puede escribir habilidades y configuración
-      allow write: if ownsAgent(uid) && subcollection == 'settings';
+    function isAgent() {
+      return signedIn() && userRole() == 'agent';
     }
 
-    // ── /invites/{token} ─────────────────────────────────
-    match /invites/{token} {
-      allow read:   if isAuth();
+    // Verifica que el agente pertenece al broker autenticado
+    function agentOwnedByMe(agentId) {
+      return exists(/databases/$(database)/documents/agents/$(agentId))
+          && get(/databases/$(database)/documents/agents/$(agentId)).data.brokerId == uid();
+    }
+
+    // /users/{userId}
+    match /users/{userId} {
+      allow read:   if signedIn() && (uid() == userId || isBroker());
+      allow create: if signedIn() && uid() == userId;
+      allow update: if signedIn() && uid() == userId;
+      allow delete: if false;
+    }
+
+    // /brokers/{brokerId}
+    match /brokers/{brokerId} {
+      allow read, write: if signedIn() && uid() == brokerId;
+    }
+
+    // /agents/{agentId} - documento raiz del agente
+    match /agents/{agentId} {
+      // Agente lee su propio perfil; broker lee perfiles de sus agentes
+      allow read:   if signedIn() && (uid() == agentId || (isBroker() && agentOwnedByMe(agentId)));
+      // Solo el broker puede crear/actualizar el perfil del agente
       allow create: if isBroker();
+      allow update: if signedIn() && (uid() == agentId || (isBroker() && agentOwnedByMe(agentId)));
+      allow delete: if isBroker() && agentOwnedByMe(agentId);
+    }
+
+    // /agents/{agentId}/accounts/{docId}
+    match /agents/{agentId}/accounts/{docId} {
+      allow read, write: if signedIn() && uid() == agentId;
+      allow read:        if isBroker() && agentOwnedByMe(agentId);
+    }
+
+    // /agents/{agentId}/transactions/{docId}
+    match /agents/{agentId}/transactions/{docId} {
+      allow read, write: if signedIn() && uid() == agentId;
+      allow read:        if isBroker() && agentOwnedByMe(agentId);
+    }
+
+    // /agents/{agentId}/goals/{docId}
+    match /agents/{agentId}/goals/{docId} {
+      allow read, write: if signedIn() && uid() == agentId;
+      allow read:        if isBroker() && agentOwnedByMe(agentId);
+    }
+
+    // /agents/{agentId}/cards/{docId}
+    match /agents/{agentId}/cards/{docId} {
+      allow read, write: if signedIn() && uid() == agentId;
+      allow read:        if isBroker() && agentOwnedByMe(agentId);
+    }
+
+    // /agents/{agentId}/settings/{docId}
+    // El broker puede escribir settings (habilidades)
+    match /agents/{agentId}/settings/{docId} {
+      allow read, write: if signedIn() && uid() == agentId;
+      allow read, write: if isBroker() && agentOwnedByMe(agentId);
+    }
+
+    // /invites/{token}
+    match /invites/{token} {
+      allow read:   if signedIn();
+      allow create: if isBroker();
+      allow update: if signedIn();
       allow delete: if isBroker();
     }
+
   }
 }
