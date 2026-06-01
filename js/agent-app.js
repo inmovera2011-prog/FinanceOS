@@ -475,16 +475,489 @@ window.submitGoal = async (e) => {
 };
 
 // ════════════════════════════════════════════════
-// PÁGINAS ESTÁTICAS (sin datos Firestore)
+// INVERSIONES
 // ════════════════════════════════════════════════
 function renderInversiones() {
-  setContent(`<div class="alert alert-info">📈 Módulo de Inversiones disponible completo en Fase 5. Incluye calculadora de interés compuesto, cartera 80/20 y simulador DCA.</div>`);
+  setContent(`
+    <div class="card mb-3">
+      <div class="card-title">📈 Calculadora de Interés Compuesto</div>
+      <form id="compound-form" onsubmit="calcCompound(event)">
+        <div class="form-row">
+          <div class="form-group"><label>Capital inicial</label>
+            <div class="input-prefix"><span>$</span><input name="capital" type="number" value="100000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>Aporte mensual</label>
+            <div class="input-prefix"><span>$</span><input name="monthly" type="number" value="10000" inputmode="decimal"></div></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Tasa anual (%)</label>
+            <input name="rate" type="number" value="12" step="0.5" inputmode="decimal"></div>
+          <div class="form-group"><label>Años</label>
+            <input name="years" type="number" value="30" min="1" max="50" inputmode="numeric"></div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Calcular</button>
+      </form>
+      <div id="compound-result" class="mt-3"></div>
+      <div class="chart-wrap h240 mt-3"><canvas id="chart-compound"></canvas></div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-title">🎯 Cartera 80/20 — Distribución sugerida</div>
+      <div class="alert alert-info mb-3">80% en activos seguros y estables · 20% en activos de mayor riesgo/retorno</div>
+      <div class="grid-2">
+        <div class="chart-wrap h200"><canvas id="chart-pareto"></canvas></div>
+        <div>
+          ${[
+            {pct:40, l:'ETF SP500 (VOO, CSPX)', c:'#10b981', i:'📊'},
+            {pct:25, l:'Bonos / Renta fija',    c:'#38bdf8', i:'📋'},
+            {pct:15, l:'FCI / Cta. remunerada', c:'#6366f1', i:'🏦'},
+            {pct:10, l:'Cripto (BTC/ETH)',       c:'#f59e0b', i:'₿'},
+            {pct:5,  l:'Inmuebles / REITs',      c:'#8b5cf6', i:'🏠'},
+            {pct:5,  l:'Alternativos',            c:'#ef4444', i:'🚀'},
+          ].map(r=>`
+            <div class="flex items-center gap-2 mb-2">
+              <span style="width:20px">${r.i}</span>
+              <span class="fs-sm" style="flex:1">${r.l}</span>
+              <div style="width:50px;height:5px;background:var(--surface2);border-radius:3px">
+                <div style="width:${r.pct}%;height:100%;background:${r.c};border-radius:3px"></div>
+              </div>
+              <span class="fs-sm fw-bold" style="width:28px;text-align:right">${r.pct}%</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-title">📉 Impacto de la inflación en tu dinero parado</div>
+      <form id="inflation-form" onsubmit="calcInflation(event)">
+        <div class="form-row">
+          <div class="form-group"><label>Monto actual</label>
+            <div class="input-prefix"><span>$</span><input name="amount" type="number" value="1000000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>Inflación anual (%)</label>
+            <input name="inflation" type="number" value="60" step="1" inputmode="decimal"></div>
+        </div>
+        <div class="form-group"><label>Años</label>
+          <input name="years" type="number" value="5" min="1" max="30" inputmode="numeric"></div>
+        <button class="btn btn-primary btn-block" type="submit">Ver impacto</button>
+      </form>
+      <div id="inflation-result" class="mt-3"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💡 DCA — Dollar Cost Averaging</div>
+      <div class="grid-2">
+        ${[
+          {i:'📅', t:'¿Qué es el DCA?', c:'Invertir un monto fijo mensual sin importar el precio. Reduces el impacto de la volatilidad automáticamente.'},
+          {i:'🧠', t:'Ventaja psicológica', c:'Eliminás el miedo a "comprar en el pico". Comprás más barato cuando el mercado cae y menos cuando sube.'},
+          {i:'⚙️', t:'Cómo aplicarlo', c:'Día 1 de cada mes: comprá ETFs indexados por transferencia automática. No mires el precio, no toques.'},
+          {i:'⏳', t:'El tiempo es el activo', c:'$10.000/mes durante 30 años al 10% anual = más de $22 millones. La clave es empezar hoy.'},
+        ].map(c=>`<div class="card" style="padding:14px"><div style="font-size:1.5rem;margin-bottom:6px">${c.i}</div><div class="fw-bold fs-sm mb-1">${c.t}</div><div class="fs-xs text-2" style="line-height:1.5">${c.c}</div></div>`).join('')}
+      </div>
+    </div>
+  `);
+
+  setTimeout(() => {
+    renderParetoChart();
+    calcCompound({ preventDefault:()=>{}, target: document.getElementById('compound-form') });
+  }, 50);
 }
-function renderCredito() {
-  setContent(`<div class="alert alert-info">💳 Módulo de Crédito disponible completo en Fase 5. Incluye gestión de tarjetas, calendario de pagos y simulador de apalancamiento.</div>`);
+
+window.calcCompound = (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const C  = parseFloat(fd.get('capital')||100000);
+  const M  = parseFloat(fd.get('monthly')||10000);
+  const r  = parseFloat(fd.get('rate')||12) / 100 / 12;
+  const Y  = parseInt(fd.get('years')||30);
+  const n  = Y * 12;
+  const compound   = C * Math.pow(1+r,n) + M * ((Math.pow(1+r,n)-1)/r);
+  const simple     = C + C*(r*12)*Y + M*n;
+  const aportado   = C + M*n;
+
+  document.getElementById('compound-result').innerHTML = `
+    <div class="grid-2" style="gap:8px">
+      <div class="kpi green" style="padding:12px"><div class="kpi-label">Interés compuesto</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(compound)}</div></div>
+      <div class="kpi amber" style="padding:12px"><div class="kpi-label">Interés simple</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(simple)}</div></div>
+    </div>
+    <div class="alert alert-success mt-2 fs-sm">💡 El compuesto genera <strong>${fmtShort(compound-simple)}</strong> extra en ${Y} años. Aportás ${fmtShort(aportado)} en total.</div>`;
+
+  // Redibujar gráfico
+  if (activeCharts.compound) { activeCharts.compound.destroy(); delete activeCharts.compound; }
+  const ctx = document.getElementById('chart-compound');
+  if (!ctx) return;
+  const labels=[], comp=[], simp=[], contrib=[];
+  for (let yr=0; yr<=Y; yr++) {
+    const nn = yr*12;
+    labels.push(yr+'a');
+    comp.push(+(C*Math.pow(1+r,nn)+M*((Math.pow(1+r,nn)-1)/r)).toFixed(0));
+    simp.push(+(C+C*(r*12)*yr+M*nn).toFixed(0));
+    contrib.push(C+M*nn);
+  }
+  activeCharts.compound = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[
+      {label:'Compuesto',data:comp,borderColor:'#10b981',backgroundColor:'#10b98115',fill:true,tension:.4,borderWidth:2,pointRadius:0},
+      {label:'Simple',   data:simp,borderColor:'#f59e0b',backgroundColor:'transparent',borderDash:[5,5],tension:.4,borderWidth:2,pointRadius:0},
+      {label:'Aportado', data:contrib,borderColor:'#475569',backgroundColor:'transparent',borderDash:[2,4],tension:.4,borderWidth:1,pointRadius:0},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#94a3b8',font:{size:10},padding:8}}},
+      scales:{
+        x:{ticks:{color:'#64748b',font:{size:9},maxTicksLimit:8},grid:{color:'#33415566'}},
+        y:{ticks:{color:'#64748b',font:{size:9},callback:v=>fmtShort(v)},grid:{color:'#33415566'}}
+      }
+    }
+  });
+};
+
+function renderParetoChart() {
+  const ctx = document.getElementById('chart-pareto'); if (!ctx) return;
+  if (activeCharts.pareto) { activeCharts.pareto.destroy(); delete activeCharts.pareto; }
+  activeCharts.pareto = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:['SP500 ETF','Bonos','FCI','Cripto','Inmuebles','Otros'],
+      datasets:[{data:[40,25,15,10,5,5],
+        backgroundColor:['#10b981','#38bdf8','#6366f1','#f59e0b','#8b5cf6','#ef4444'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{display:false}}}
+  });
 }
-function renderReportes() {
-  setContent(`<div class="alert alert-info">📊 Módulo de Reportes disponible completo en Fase 5. Incluye análisis histórico, variaciones y top 10 de gastos.</div>`);
+
+window.calcInflation = (e) => {
+  e.preventDefault();
+  const fd  = new FormData(e.target);
+  const A   = parseFloat(fd.get('amount'));
+  const inf = parseFloat(fd.get('inflation')) / 100;
+  const Y   = parseInt(fd.get('years'));
+  const fv  = A / Math.pow(1+inf, Y);
+  document.getElementById('inflation-result').innerHTML = `
+    <div class="alert alert-danger">En ${Y} años, ${fmtShort(A)} de hoy valen <strong>${fmtShort(fv)}</strong> en poder de compra. Pérdida real: <strong>${fmtShort(A-fv)}</strong> (${((1-fv/A)*100).toFixed(1)}%)</div>
+    <div class="alert alert-success">💡 En una cuenta remunerada al ritmo de la inflación mantenés el valor real.</div>`;
+};
+
+// ════════════════════════════════════════════════
+// CRÉDITO Y DEUDA
+// ════════════════════════════════════════════════
+async function renderCredito() {
+  document.getElementById('topbar-action').innerHTML =
+    `<button class="btn btn-primary btn-sm" onclick="openNewCard()">+ Tarjeta</button>`;
+
+  const cards = await getCards();
+
+  const totalDeuda   = cards.reduce((s,c) => s+(c.balance||0), 0);
+  const totalLimite  = cards.reduce((s,c) => s+(c.limit||0), 0);
+  const utilizacion  = totalLimite ? (totalDeuda/totalLimite*100) : 0;
+
+  setContent(`
+    ${totalDeuda > 0 ? `
+    <div class="grid-2 mb-3">
+      <div class="kpi red" style="padding:14px"><div class="kpi-label">Deuda total</div><div class="kpi-value" style="font-size:1.2rem">${fmtShort(totalDeuda)}</div></div>
+      <div class="kpi ${utilizacion>80?'red':utilizacion>50?'amber':'green'}" style="padding:14px"><div class="kpi-label">Utilización</div><div class="kpi-value" style="font-size:1.2rem">${utilizacion.toFixed(1)}%</div><div class="kpi-sub">Mantené bajo 30%</div></div>
+    </div>` : ''}
+
+    <div class="card mb-3">
+      <div class="card-header">
+        <span class="card-title">💳 Mis tarjetas</span>
+        <button class="btn btn-ghost btn-sm" onclick="openNewCard()">+</button>
+      </div>
+      ${!cards.length
+        ? `<div class="empty-state"><div class="es-icon">💳</div><button class="btn btn-primary mt-3" onclick="openNewCard()">Agregar tarjeta</button></div>`
+        : cards.map(c => cardBlock(c)).join('')}
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-title">📅 50 días de financiamiento gratis</div>
+      <div class="alert alert-info mb-3">Comprando el día <strong>después del cierre</strong>, tenés hasta ~50 días para pagar sin interés. <strong>NUNCA pagar el mínimo</strong> — puede costarte 3× el monto original.</div>
+      ${cards.map(c => {
+        const now = new Date();
+        const daysTocut = ((c.cutDate - now.getDate() + 31) % 31) || 31;
+        const window50  = daysTocut + (c.payDate > c.cutDate ? c.payDate - c.cutDate : 30 + c.payDate - c.cutDate);
+        const nextCut   = new Date(); nextCut.setDate(c.cutDate);
+        if (nextCut < now) nextCut.setMonth(nextCut.getMonth()+1);
+        return `
+        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin-bottom:8px">
+          <div class="flex justify-between items-center">
+            <span class="fw-bold fs-sm">${c.name}</span>
+            <span class="badge badge-green">🟢 ~${window50} días gratis</span>
+          </div>
+          <div class="fs-xs text-2 mt-1">Cierre: día ${c.cutDate} · Pago: día ${c.payDate} · Próximo cierre: ${nextCut.toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</div>
+          ${c.minPayment ? `<div class="alert alert-warning fs-xs mt-2" style="padding:6px 10px">⚠️ Mínimo: ${fmt(c.minPayment)} — Pagá SIEMPRE el total</div>` : ''}
+        </div>`;}).join('') || '<div class="fs-sm text-2">Agregá tarjetas para ver el calendario.</div>'}
+    </div>
+
+    ${cards.filter(c=>c.balance>0).length ? `
+    <div class="card mb-3">
+      <div class="card-title">🧘 Plan de eliminación — Estrategia Avalancha</div>
+      <div class="alert alert-info mb-3 fs-sm">Pagá primero la deuda con mayor tasa. Ahorrás más dinero a largo plazo.</div>
+      ${cards.filter(c=>c.balance>0).sort((a,b)=>(b.apr||0)-(a.apr||0)).map(c=>`
+        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin-bottom:8px">
+          <div class="flex justify-between mb-1"><span class="fw-bold fs-sm">${c.name}</span><span class="text-danger fw-bold">${fmt(c.balance)}</span></div>
+          <div class="fs-xs text-2">APR: ${c.apr||'?'}% · Mínimo: ${fmt(c.minPayment||0)}</div>
+          <div class="progress-bar mt-2" style="height:5px"><div class="progress-fill" style="width:${Math.min(100,c.balance/(c.limit||c.balance)*100)}%;background:var(--danger)"></div></div>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <div class="card mb-3">
+      <div class="card-title">🏦 Simulador de apalancamiento</div>
+      <form id="lev-form" onsubmit="calcLeverage(event)">
+        <div class="form-row">
+          <div class="form-group"><label>Precio del activo</label>
+            <div class="input-prefix"><span>$</span><input name="price" type="number" value="50000000" inputmode="decimal"></div></div>
+          <div class="form-group"><label>Entrada (%)</label>
+            <input name="down" type="number" value="30" step="5" inputmode="numeric"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Tasa hipoteca (%)</label>
+            <input name="rate" type="number" value="8" step="0.5" inputmode="decimal"></div>
+          <div class="form-group"><label>Años crédito</label>
+            <input name="years" type="number" value="20" inputmode="numeric"></div>
+        </div>
+        <div class="form-group"><label>Rentabilidad neta anual (%)</label>
+          <input name="yield" type="number" value="6" step="0.5" inputmode="decimal"></div>
+        <button class="btn btn-primary btn-block" type="submit">Calcular</button>
+      </form>
+      <div id="lev-result" class="mt-3"></div>
+    </div>
+  `);
+}
+
+function cardBlock(c) {
+  const u = c.limit ? (c.balance/c.limit*100) : 0;
+  return `
+  <div style="background:var(--surface2);border-radius:var(--r-sm);padding:14px;margin-bottom:10px;border-left:4px solid ${u>80?'var(--danger)':u>50?'var(--warning)':'var(--primary)'}">
+    <div class="flex justify-between items-center mb-1">
+      <span class="fw-bold">${c.name}</span>
+      <div class="flex gap-2">
+        <button class="btn btn-ghost btn-sm" onclick="openEditCard('${c.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" onclick="removeCard('${c.id}')">🗑</button>
+      </div>
+    </div>
+    <div class="fs-xs text-2 mb-2">${c.bank||''} · Cierre día ${c.cutDate} · Pago día ${c.payDate} · APR ${c.apr||'?'}%</div>
+    <div class="flex justify-between mb-1">
+      <span class="text-danger fw-bold">${fmt(c.balance)}</span>
+      <span class="text-2 fs-sm">Límite: ${fmt(c.limit)}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,u)}%;background:${u>80?'var(--danger)':u>50?'var(--warning)':'var(--success)'}"></div></div>
+    <div class="fs-xs text-2 mt-1">Utilización: ${u.toFixed(1)}%${u>30?' · ⚠️ Mantenelo bajo 30%':''}</div>
+  </div>`;
+}
+
+window.openNewCard = () => {
+  showGenericModal('💳 Nueva Tarjeta', cardForm());
+};
+window.openEditCard = async (id) => {
+  const cards = await getCards();
+  const c = cards.find(x=>x.id===id); if (!c) return;
+  showGenericModal('✏️ Editar Tarjeta', cardForm(c));
+};
+function cardForm(c={}) {
+  return `<form onsubmit="submitCard(event,'${c.id||''}')">
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input name="name" placeholder="Visa Galicia" value="${c.name||''}" required></div>
+      <div class="form-group"><label>Banco</label><input name="bank" placeholder="Galicia" value="${c.bank||''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Límite</label><input name="limit" type="number" step="100" value="${c.limit||''}" inputmode="decimal"></div>
+      <div class="form-group"><label>Saldo actual</label><input name="balance" type="number" step="0.01" value="${c.balance||0}" inputmode="decimal"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Día de cierre</label><input name="cutDate" type="number" min="1" max="31" value="${c.cutDate||15}" inputmode="numeric"></div>
+      <div class="form-group"><label>Día de pago</label><input name="payDate" type="number" min="1" max="31" value="${c.payDate||5}" inputmode="numeric"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>APR anual (%)</label><input name="apr" type="number" step="0.1" value="${c.apr||45}" inputmode="decimal"></div>
+      <div class="form-group"><label>Pago mínimo</label><input name="minPayment" type="number" step="0.01" value="${c.minPayment||0}" inputmode="decimal"></div>
+    </div>
+    <button class="btn btn-primary btn-block mt-3" type="submit">Guardar</button>
+  </form>`;
+}
+window.submitCard = async (e, existingId) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  await saveCard({
+    id: existingId || undefined,
+    name: fd.get('name'), bank: fd.get('bank'),
+    limit: parseFloat(fd.get('limit'))||0,
+    balance: parseFloat(fd.get('balance'))||0,
+    cutDate: parseInt(fd.get('cutDate')),
+    payDate: parseInt(fd.get('payDate')),
+    apr: parseFloat(fd.get('apr'))||0,
+    minPayment: parseFloat(fd.get('minPayment'))||0,
+  });
+  closeModal('modal-generic'); renderCredito();
+};
+window.removeCard = async (id) => {
+  if (!confirm('¿Eliminar esta tarjeta?')) return;
+  await deleteCard(id); renderCredito();
+};
+window.calcLeverage = (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const price = parseFloat(fd.get('price'));
+  const down  = parseFloat(fd.get('down'))/100;
+  const rate  = parseFloat(fd.get('rate'))/100/12;
+  const years = parseInt(fd.get('years'));
+  const yld   = parseFloat(fd.get('yield'))/100;
+  const loan  = price*(1-down); const n=years*12;
+  const monthly = loan*(rate*Math.pow(1+rate,n))/(Math.pow(1+rate,n)-1);
+  const cashflow = price*yld/12 - monthly;
+  const totalInterest = monthly*n - loan;
+  document.getElementById('lev-result').innerHTML = `
+    <div class="grid-2 mb-2" style="gap:8px">
+      <div class="kpi" style="padding:12px"><div class="kpi-label">Cuota mensual</div><div class="kpi-value" style="font-size:1.1rem">${fmt(monthly)}</div></div>
+      <div class="kpi ${cashflow>=0?'green':'red'}" style="padding:12px"><div class="kpi-label">Flujo mensual</div><div class="kpi-value" style="font-size:1.1rem">${cashflow>=0?'+':''}${fmt(cashflow)}</div></div>
+    </div>
+    <div class="alert ${cashflow>=0?'alert-success':'alert-warning'} fs-sm">
+      Total intereses pagados: <strong>${fmtShort(totalInterest)}</strong><br>
+      ${cashflow>=0?'✅ El activo se autofinancia con la renta.':'⚠️ La cuota supera la renta. Evaluá si conviene más entrada inicial.'}
+    </div>`;
+};
+
+// ════════════════════════════════════════════════
+// REPORTES
+// ════════════════════════════════════════════════
+async function renderReportes() {
+  setContent(`<div style="text-align:center;padding:32px;color:var(--text2)"><div class="spinner" style="width:32px;height:32px;margin:0 auto 12px"></div>Cargando reportes...</div>`);
+
+  // Cargar últimos 6 meses de transacciones
+  const now = new Date();
+  const months = [];
+  for (let i=5; i>=0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({ d, ym: monthKey(d), label: d.toLocaleDateString('es-AR',{month:'short'}) });
+  }
+
+  const allTxsByMonth = await Promise.all(
+    months.map(m => getMonthTransactions(m.ym).catch(()=>[]))
+  );
+
+  const monthTotals = allTxsByMonth.map(txs => calcPeriodTotals(txs, DEFAULT_CATS));
+  const curTotals   = monthTotals[5];
+  const prevTotals  = monthTotals[4];
+
+  const variation   = prevTotals.egresos
+    ? ((curTotals.egresos - prevTotals.egresos) / prevTotals.egresos * 100) : 0;
+  const savRate     = curTotals.ingresos
+    ? (curTotals.ahorros / curTotals.ingresos * 100) : 0;
+
+  // Top 10 de este mes
+  const curTxs    = allTxsByMonth[5];
+  const catTotals = calcCategoryTotals(curTxs, DEFAULT_CATS);
+  const top10     = Object.entries(catTotals)
+    .map(([id,v]) => ({ id, v, cat: DEFAULT_CATS.find(c=>c.id===id) }))
+    .filter(x => x.cat && x.cat.macro !== 'Ahorro/Inversión')
+    .sort((a,b) => b.v - a.v)
+    .slice(0, 10);
+
+  // Macro breakdown
+  const macro = {};
+  Object.entries(catTotals).forEach(([cid,amt]) => {
+    const cat = DEFAULT_CATS.find(c=>c.id===cid);
+    if (cat) macro[cat.macro] = (macro[cat.macro]||0) + amt;
+  });
+
+  setContent(`
+    <div class="grid-2 mb-3">
+      <div class="kpi ${variation<=0?'green':'red'}" style="padding:14px">
+        <div class="kpi-label">Variación vs mes anterior</div>
+        <div class="kpi-value">${variation>=0?'+':''}${variation.toFixed(1)}%</div>
+        <div class="kpi-sub">${variation>10?'⚠️ Aumento inusual':variation<-10?'✅ Bajaste gastos':variation===0?'Sin cambios':'Normal'}</div>
+      </div>
+      <div class="kpi blue" style="padding:14px">
+        <div class="kpi-label">Tasa de ahorro</div>
+        <div class="kpi-value">${savRate.toFixed(1)}%</div>
+        <div class="kpi-sub">${savRate>=20?'✅ Por encima del 20% objetivo':savRate>0?'⚠️ Meta: 20%':'Sin ahorros'}</div>
+      </div>
+    </div>
+
+    <div class="grid-2 mb-3">
+      <div class="card">
+        <div class="card-title">Flujo de caja — últimos 6 meses</div>
+        <div class="chart-wrap h220"><canvas id="chart-hist"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Distribución por categoría</div>
+        <div class="chart-wrap h220"><canvas id="chart-macro"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-title">Evolución del ahorro</div>
+      <div class="chart-wrap h180"><canvas id="chart-saving"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Top ${top10.length} gastos este mes</div>
+      ${top10.length ? top10.map((x,i) => {
+        const pct = (x.v / top10[0].v * 100).toFixed(0);
+        return `<div class="flex items-center gap-2 mb-3">
+          <span class="fs-xs text-3" style="width:18px">#${i+1}</span>
+          <span style="width:20px">${x.cat.icon}</span>
+          <span class="fs-sm" style="flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${x.cat.name}</span>
+          <div style="width:80px;height:6px;background:var(--surface2);border-radius:3px;flex-shrink:0">
+            <div style="width:${pct}%;height:100%;background:var(--primary);border-radius:3px"></div>
+          </div>
+          <span class="fs-sm fw-bold" style="flex-shrink:0;min-width:60px;text-align:right">${fmtShort(x.v)}</span>
+        </div>`;}).join('') : '<div class="empty-state fs-sm">Sin gastos este mes</div>'}
+    </div>
+  `);
+
+  setTimeout(() => {
+    renderHistChart(months, monthTotals);
+    renderMacroChart(macro);
+    renderSavingChart(months, monthTotals);
+  }, 50);
+}
+
+function renderHistChart(months, totals) {
+  const ctx = document.getElementById('chart-hist'); if (!ctx) return;
+  activeCharts.hist = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: months.map(m=>m.label), datasets:[
+      {label:'Ingresos', data:totals.map(t=>t.ingresos), backgroundColor:'#10b98180', borderRadius:4, borderSkipped:false},
+      {label:'Gastos',   data:totals.map(t=>t.egresos),  backgroundColor:'#ef444480', borderRadius:4, borderSkipped:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#94a3b8',font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:'#64748b',font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:'#64748b',font:{size:10},callback:v=>fmtShort(v)},grid:{color:'#33415566'}}
+      }
+    }
+  });
+}
+
+function renderMacroChart(macro) {
+  const ctx = document.getElementById('chart-macro'); if (!ctx) return;
+  const entries = Object.entries(macro).filter(([,v])=>v>0);
+  if (!entries.length) return;
+  activeCharts.macro = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:entries.map(([k])=>k),
+      datasets:[{data:entries.map(([,v])=>v),
+        backgroundColor:['#6366f1','#10b981','#f59e0b','#ef4444','#38bdf8','#8b5cf6'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:10},padding:6}}}}
+  });
+}
+
+function renderSavingChart(months, totals) {
+  const ctx = document.getElementById('chart-saving'); if (!ctx) return;
+  const rates = totals.map(t => t.ingresos ? +(t.ahorros/t.ingresos*100).toFixed(1) : 0);
+  activeCharts.saving = new Chart(ctx, {
+    type:'line',
+    data:{ labels:months.map(m=>m.label), datasets:[
+      {label:'Tasa de ahorro %', data:rates, borderColor:'#6366f1', backgroundColor:'#6366f115',
+       fill:true, tension:.4, borderWidth:2, pointRadius:4, pointBackgroundColor:'#6366f1'},
+      {label:'Objetivo 20%', data:Array(6).fill(20), borderColor:'#10b981',
+       borderDash:[6,3], borderWidth:1.5, pointRadius:0, tension:0},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#94a3b8',font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:'#64748b',font:{size:10}},grid:{display:false}},
+        y:{min:0,ticks:{color:'#64748b',font:{size:10},callback:v=>v+'%'},grid:{color:'#33415566'}}
+      }
+    }
+  });
 }
 
 function renderEducacion() {
