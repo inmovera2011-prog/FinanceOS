@@ -6,6 +6,8 @@ firebase-debug.log
 .env
 .env.local
 .env.*.local
+# firebase-config.js NO se sube al repo — se genera en GitHub Actions desde el secret FIREBASE_CONFIG_JSON
+# Para desarrollo local: copiá js/firebase-config.example.js → js/firebase-config.js y completá tus datos
 js/firebase-config.js
 
 # Node

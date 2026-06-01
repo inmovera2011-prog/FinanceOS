@@ -128,14 +128,24 @@ export async function requireRole(expectedRole) {
 }
 
 // ── Helpers ───────────────────────────────────────
+
+// Detecta el base path correcto en cualquier entorno:
+//   localhost:3030/                    → /
+//   usuario.github.io/FinanceOS/       → /FinanceOS/
+//   miapp.web.app/                     → /
 function getBasePath() {
-  // Funciona tanto en localhost como en producción (Firebase Hosting)
   const path = window.location.pathname;
-  if (path.includes('/broker/') || path.includes('/agent/')) {
-    return path.replace(/\/(broker|agent)\/.*/, '/');
+  // Si estamos dentro de /broker/ o /agent/, removemos ese segmento y el resto
+  if (/\/(broker|agent)(\/|$)/.test(path)) {
+    return path.replace(/\/(broker|agent)(\/.*)?$/, '/');
   }
-  return '/';
+  // Si estamos en la raíz del proyecto (puede ser subdirectorio en GitHub Pages)
+  // Devolvemos el path actual con trailing slash
+  return path.endsWith('/') ? path : path.slice(0, path.lastIndexOf('/') + 1);
 }
+
+// Exportamos logout globalmente para poder usarlo desde HTML inline
+window._fosLogout = async () => { await signOut(auth); window.location.href = getBasePath(); };
 
 function showPendingScreen(email) {
   document.body.innerHTML = `
@@ -143,6 +153,6 @@ function showPendingScreen(email) {
       <div style="font-size:3rem">⏳</div>
       <div style="font-size:1.2rem;font-weight:700">Cuenta en revisión</div>
       <div style="color:#94a3b8;max-width:360px">Tu cuenta <strong>${email}</strong> existe pero aún no tiene un rol asignado. Contactá a tu broker para que active tu acceso.</div>
-      <button onclick="logout()" style="margin-top:12px;padding:10px 20px;background:#334155;color:#f1f5f9;border:none;border-radius:8px;cursor:pointer">Cerrar sesión</button>
+      <button onclick="window._fosLogout()" style="margin-top:12px;padding:10px 20px;background:#334155;color:#f1f5f9;border:none;border-radius:8px;cursor:pointer">Cerrar sesión</button>
     </div>`;
 }

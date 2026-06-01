@@ -1,0 +1,55 @@
+name: Deploy FinanceOS a GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # permite ejecutar manualmente desde la UI
+
+# Permisos necesarios para GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Solo un deploy a la vez
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repo
+        uses: actions/checkout@v4
+
+      # Crea js/firebase-config.js en runtime usando el secret FIREBASE_CONFIG_JSON
+      # El secret debe tener el objeto JSON puro, por ejemplo:
+      # {"apiKey":"AIzaSy...","authDomain":"proyecto.firebaseapp.com","projectId":"proyecto",...}
+      - name: Inyectar firebase-config.js desde secret
+        env:
+          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG_JSON }}
+        run: |
+          echo "// Generado automáticamente por GitHub Actions — no editar manualmente" > js/firebase-config.js
+          echo "const FIREBASE_CONFIG = $FIREBASE_CONFIG;" >> js/firebase-config.js
+          echo "export default FIREBASE_CONFIG;" >> js/firebase-config.js
+          echo "✅ firebase-config.js generado correctamente"
+
+      # Configurar GitHub Pages
+      - name: Configurar Pages
+        uses: actions/configure-pages@v4
+
+      # Subir todo el repo como artefacto (excepto .git y node_modules)
+      - name: Subir artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      # Deploy a GitHub Pages
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
