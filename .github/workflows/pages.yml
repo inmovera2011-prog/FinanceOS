@@ -2,7 +2,7 @@ name: Deploy FinanceOS a GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:   # permite ejecutar manualmente desde la UI
 
 # Permisos necesarios para GitHub Pages
