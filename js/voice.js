@@ -95,36 +95,14 @@ let _bubble = null;
 
 export const voiceSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
+// Estilos con animaciones (necesitan <style>, no se pueden hacer inline)
 function injectStyles() {
   if (document.getElementById("vjs-styles")) return;
   const s = document.createElement("style");
   s.id = "vjs-styles";
   s.textContent = `
-    .vjs-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.65);z-index:2147483647;display:flex;align-items:flex-end;justify-content:center}
-    .vjs-card{background:#1e293b;border-radius:18px 18px 0 0;width:100%;max-width:500px;padding:22px 24px 28px;color:#f1f5f9;box-shadow:0 -4px 24px rgba(0,0,0,.4);animation:vjsUp .25s ease-out;position:relative}
     @keyframes vjsUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    .vjs-close{position:absolute;top:14px;right:18px;background:none;border:none;color:#64748b;font-size:1.3rem;cursor:pointer;line-height:1;padding:4px}
-    .vjs-close:hover{color:#f1f5f9}
-    .vjs-bars{display:flex;gap:5px;align-items:center;justify-content:center;height:44px;margin:8px 0}
-    .vjs-bar{width:4px;border-radius:2px;background:#14b8a6;animation:vjsBar .5s ease-in-out infinite alternate}
-    .vjs-bar:nth-child(1){height:12px;animation-duration:.4s}
-    .vjs-bar:nth-child(2){height:26px;animation-duration:.6s}
-    .vjs-bar:nth-child(3){height:18px;animation-duration:.5s}
-    .vjs-bar:nth-child(4){height:30px;animation-duration:.7s}
-    @keyframes vjsBar{0%{opacity:.35;transform:scaleY(.6)}100%{opacity:1;transform:scaleY(1.15)}}
-    .vjs-title{text-align:center;font-size:1rem;font-weight:600;margin:8px 0 4px;color:#94a3b8}
-    .vjs-interim{font-style:italic;font-size:.9rem;color:#cbd5e1;text-align:center;min-height:24px;padding:4px 0}
-    .vjs-result-box{background:#0f172a;border-radius:12px;padding:14px 16px;margin:12px 0}
-    .vjs-transcript{font-style:italic;color:#94a3b8;font-size:.82rem;margin-bottom:10px}
-    .vjs-detected{font-size:1rem;font-weight:600;margin-bottom:6px}
-    .vjs-amount{font-size:1.6rem;font-weight:900;margin-top:6px}
-    .vjs-btns{display:flex;gap:10px;margin-top:16px}
-    .vjs-btn{flex:1;padding:12px;border:none;border-radius:40px;font-weight:700;font-size:.9rem;cursor:pointer;transition:.15s}
-    .vjs-btn:active{transform:scale(.96)}
-    .vjs-btn-ok{background:#14b8a6;color:#fff}
-    .vjs-btn-ok:hover{background:#0d9488}
-    .vjs-btn-edit{background:#334155;color:#f1f5f9}
-    .vjs-btn-edit:hover{background:#475569}
+    @keyframes vjsBar{0%{opacity:.35;transform:scaleY(.5)}100%{opacity:1;transform:scaleY(1.2)}}
   `;
   document.head.appendChild(s);
 }
@@ -132,54 +110,104 @@ function injectStyles() {
 function openBubble() {
   if (_bubble) { _bubble.remove(); _bubble = null; }
   injectStyles();
+
+  // Overlay — todo inline para evitar conflictos CSS
   _bubble = document.createElement("div");
-  _bubble.className = "vjs-overlay";
-  _bubble.innerHTML = `<div class="vjs-card">
-    <button class="vjs-close" id="vjs-x">✕</button>
-    <div class="vjs-bars">
-      <div class="vjs-bar"></div><div class="vjs-bar"></div>
-      <div class="vjs-bar"></div><div class="vjs-bar"></div>
-    </div>
-    <div class="vjs-title">Escuchando... hablá ahora</div>
-    <div class="vjs-interim" id="vjs-interim"></div>
-  </div>`;
-  document.body.appendChild(_bubble);
+  Object.assign(_bubble.style, {
+    position:"fixed", top:"0", left:"0", right:"0", bottom:"0",
+    background:"rgba(0,0,0,.7)", zIndex:"2147483647",
+    display:"flex", alignItems:"flex-end", justifyContent:"center",
+    fontFamily:"system-ui,-apple-system,sans-serif",
+  });
+
+  // Card
+  const card = document.createElement("div");
+  card.id = "vjs-card";
+  Object.assign(card.style, {
+    background:"#1e293b", borderRadius:"18px 18px 0 0",
+    width:"100%", maxWidth:"500px", padding:"22px 24px 28px",
+    color:"#f1f5f9", boxShadow:"0 -4px 24px rgba(0,0,0,.5)",
+    animation:"vjsUp .25s ease-out", position:"relative",
+  });
+
+  // Barras de sonido
+  const bars = document.createElement("div");
+  Object.assign(bars.style, { display:"flex", gap:"5px", alignItems:"center", justifyContent:"center", height:"44px", margin:"8px 0" });
+  [{ h:"12px", d:".4s" },{ h:"26px", d:".6s" },{ h:"18px", d:".5s" },{ h:"30px", d:".7s" }].forEach(b => {
+    const bar = document.createElement("div");
+    Object.assign(bar.style, { width:"4px", height:b.h, borderRadius:"2px", background:"#14b8a6", animation:`vjsBar .5s ease-in-out ${b.d} infinite alternate` });
+    bars.appendChild(bar);
+  });
+
+  const title = document.createElement("div");
+  title.textContent = "Escuchando... hablá ahora";
+  Object.assign(title.style, { textAlign:"center", fontSize:"1rem", fontWeight:"600", color:"#94a3b8", margin:"8px 0 4px" });
+
+  const interim = document.createElement("div");
+  interim.id = "vjs-interim";
+  Object.assign(interim.style, { fontStyle:"italic", fontSize:".9rem", color:"#cbd5e1", textAlign:"center", minHeight:"24px", padding:"4px 0" });
+
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "✕";
+  Object.assign(closeBtn.style, { position:"absolute", top:"14px", right:"18px", background:"none", border:"none", color:"#64748b", fontSize:"1.3rem", cursor:"pointer", lineHeight:"1", padding:"4px" });
+  closeBtn.addEventListener("click", dismissVoiceCard);
+
+  card.appendChild(closeBtn);
+  card.appendChild(bars);
+  card.appendChild(title);
+  card.appendChild(interim);
+  _bubble.appendChild(card);
+
   // Cerrar al tocar fuera
   _bubble.addEventListener("click", e => { if (e.target === _bubble) dismissVoiceCard(); });
-  document.getElementById("vjs-x").addEventListener("click", dismissVoiceCard);
+
+  // Adjuntar al <html>, no al <body>, para evitar overflow:hidden
+  document.documentElement.appendChild(_bubble);
 }
 
 function showResult(parsed) {
-  if (!_bubble) return;
+  const card = document.getElementById("vjs-card");
+  if (!card) return;
   const cats = window._voiceCats || [];
-  const cat  = cats.find(c => c.id === parsed.categoryId) || { name: "Otro", icon: "📦" };
+  const cat  = cats.find(c => c.id === parsed.categoryId) || { name:"Otro", icon:"📦" };
   const typeLabel = parsed.type === "ingreso" ? "💰 Ingreso" : "📤 Gasto";
   const amtFmt = parsed.amount
     ? "$ " + parsed.amount.toLocaleString("es-AR", {minimumFractionDigits:0})
     : "Monto no detectado";
   const amtColor = parsed.amount ? (parsed.type==="ingreso"?"#34d399":"#f87171") : "#f59e0b";
 
-  _bubble.querySelector(".vjs-card").innerHTML = `
-    <button class="vjs-close" id="vjs-x">✕</button>
-    <div class="vjs-result-box">
-      <div class="vjs-transcript">"${esc(parsed.transcript)}"</div>
-      <div class="vjs-detected">${typeLabel} &nbsp;·&nbsp; ${cat.icon} ${esc(cat.name)}</div>
-      <div class="vjs-amount" style="color:${amtColor}">${amtFmt}</div>
-    </div>
-    <div class="vjs-btns">
-      <button class="vjs-btn vjs-btn-edit" id="vjs-edit">✎ Corregir</button>
-      <button class="vjs-btn vjs-btn-ok"   id="vjs-ok">✅ Registrar</button>
-    </div>`;
+  card.innerHTML = "";
 
-  document.getElementById("vjs-x").addEventListener("click", dismissVoiceCard);
-  document.getElementById("vjs-edit").addEventListener("click", () => {
-    if (_onConfirm) _onConfirm({ ...parsed, edit: true });
-    dismissVoiceCard();
-  });
-  document.getElementById("vjs-ok").addEventListener("click", () => {
-    if (_onConfirm) _onConfirm(parsed);
-    dismissVoiceCard();
-  });
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "✕";
+  Object.assign(closeBtn.style, { position:"absolute", top:"14px", right:"18px", background:"none", border:"none", color:"#64748b", fontSize:"1.3rem", cursor:"pointer", padding:"4px" });
+  closeBtn.addEventListener("click", dismissVoiceCard);
+
+  const box = document.createElement("div");
+  Object.assign(box.style, { background:"#0f172a", borderRadius:"12px", padding:"14px 16px", margin:"8px 0 12px" });
+  box.innerHTML = `
+    <div style="font-style:italic;color:#94a3b8;font-size:.82rem;margin-bottom:10px">"${esc(parsed.transcript)}"</div>
+    <div style="font-size:1rem;font-weight:600;margin-bottom:6px">${typeLabel} &nbsp;·&nbsp; ${cat.icon} ${esc(cat.name)}</div>
+    <div style="font-size:1.6rem;font-weight:900;color:${amtColor}">${amtFmt}</div>`;
+
+  const btns = document.createElement("div");
+  Object.assign(btns.style, { display:"flex", gap:"10px", marginTop:"4px" });
+
+  const editBtn = document.createElement("button");
+  editBtn.textContent = "✎ Corregir";
+  Object.assign(editBtn.style, { flex:"1", padding:"12px", border:"none", borderRadius:"40px", fontWeight:"700", fontSize:".9rem", cursor:"pointer", background:"#334155", color:"#f1f5f9" });
+  editBtn.addEventListener("click", () => { if (_onConfirm) _onConfirm({...parsed, edit:true}); dismissVoiceCard(); });
+
+  const okBtn = document.createElement("button");
+  okBtn.textContent = "✅ Registrar";
+  Object.assign(okBtn.style, { flex:"1", padding:"12px", border:"none", borderRadius:"40px", fontWeight:"700", fontSize:".9rem", cursor:"pointer", background:"#14b8a6", color:"#fff" });
+  okBtn.addEventListener("click", () => { if (_onConfirm) _onConfirm(parsed); dismissVoiceCard(); });
+
+  btns.appendChild(editBtn);
+  btns.appendChild(okBtn);
+  card.appendChild(closeBtn);
+  card.appendChild(box);
+  card.appendChild(btns);
 }
 
 export function dismissVoiceCard() {
@@ -263,7 +291,12 @@ function startRecognition() {
     }
   };
 
-  r.start();
+  try {
+    r.start();
+  } catch(e) {
+    const card = document.getElementById("vjs-card");
+    if (card) card.innerHTML = `<div style="text-align:center;padding:12px"><div style="font-size:1.5rem;margin-bottom:8px">⚠️</div><div style="font-size:.9rem;color:#f87171">${e.message || "Error al iniciar el micrófono"}</div><button onclick="window.dismissVoiceCard()" style="margin-top:12px;padding:8px 20px;background:#334155;color:#fff;border:none;border-radius:20px;cursor:pointer">Cerrar</button></div>`;
+  }
 }
 
 // ═══════════════════════════════════════════════
