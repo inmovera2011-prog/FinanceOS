@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<title>FinanceOS — Demo Usuario</title>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+html,body{height:100%;overflow:hidden;display:flex;flex-direction:column}
+:root{--nav-h:64px;--top-h:56px;--safe-bottom:0px}
+#topbar{height:var(--top-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0}
+.top-logo{font-size:1.05rem;font-weight:900;color:var(--primary)}
+.top-logo span{color:var(--text2);font-weight:400}
+#topbar-title{flex:1;font-size:.92rem;font-weight:600;text-align:center}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;cursor:pointer;flex-shrink:0;margin-left:auto}
+#layout{display:flex;flex:1;overflow:hidden}
+#content{flex:1;overflow-y:auto;padding:14px;padding-bottom:calc(var(--nav-h)+14px)}
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:stretch;z-index:300;overflow:visible}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:3px;padding:6px 4px;color:var(--text3);font-size:.62rem;font-weight:600;text-transform:uppercase;border:none;background:none}
+.bn-item.active{color:var(--primary)}
+.bn-icon{font-size:1.2rem;line-height:1}
+.bn-fab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.bn-fab-btn{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#4f46e5);border:none;color:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px #6366f155;cursor:pointer;margin-top:-20px}
+.bn-fab-label{font-size:.6rem;font-weight:600;color:var(--text3);text-transform:uppercase;margin-top:2px}
+/* Voice FAB — flotante sobre "Más" */
+#voice-fab{position:absolute;right:6px;top:-64px;width:52px;height:52px;border-radius:50%;background:linear-gradient(145deg,#0d9488,#14b8a6,#06b6d4);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px #0d948870,0 2px 6px #0004;z-index:400}
+/* UI */
+.hero{background:linear-gradient(135deg,#1e1b4b,#312e81);border:1px solid #4338ca50;border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.hero-label{font-size:.7rem;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.hero-amount{font-size:2.2rem;font-weight:900;color:#fff;letter-spacing:-1px}
+.hero-sub{font-size:.78rem;color:#a5b4fc;margin-top:6px}
+.hero-row{display:flex;gap:10px;margin-top:12px}
+.hero-stat{flex:1;background:#ffffff12;border-radius:10px;padding:10px;text-align:center}
+.hero-stat-val{font-size:1rem;font-weight:700;margin-bottom:2px}
+.hero-stat-label{font-size:.62rem;color:#a5b4fc;text-transform:uppercase;letter-spacing:.4px}
+.period-tabs{display:flex;background:#334155;border-radius:20px;padding:3px;margin-bottom:12px}
+.period-tab{flex:1;padding:7px 6px;text-align:center;border-radius:17px;font-size:.78rem;font-weight:600;color:#94a3b8;border:none;background:transparent;cursor:pointer}
+.period-tab.active{background:var(--primary);color:#fff}
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.qa-btn{border:none;border-radius:14px;padding:16px;cursor:pointer;font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:8px;justify-content:center;min-height:52px;color:#fff}
+.qa-ingreso{background:linear-gradient(135deg,#065f46,#10b981)}
+.qa-egreso{background:linear-gradient(135deg,#7f1d1d,#ef4444)}
+.qa-traslado{background:#334155;color:#f1f5f9;grid-column:span 2;min-height:42px;font-size:.8rem}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;position:relative}
+.kpi-label{font-size:.68rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-value{font-size:1.4rem;font-weight:900}
+.kpi-sub{font-size:.73rem;color:#94a3b8;margin-top:3px}
+.kpi-icon{position:absolute;right:10px;top:10px;font-size:1.3rem;opacity:.7}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
+.progress-bar{height:6px;background:#334155;border-radius:3px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:3px}
+.tx-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #334155}
+.tx-item:last-child{border-bottom:none}
+.tx-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.tx-info{flex:1;min-width:0}
+.tx-name{font-size:.87rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-cat{font-size:.7rem;color:#94a3b8;margin-top:1px}
+.tx-amount{font-size:.92rem;font-weight:700;flex-shrink:0}
+.alert{padding:11px 14px;border-radius:10px;font-size:.82rem;display:flex;gap:10px;margin-bottom:12px}
+.alert-info{background:#38bdf812;border:1px solid #38bdf840;color:#7dd3fc}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <span class="top-logo">Finance<span>OS</span></span>
+  <span id="topbar-title"></span>
+  <div class="user-avatar">A</div>
+</div>
+<div id="layout">
+<div id="content">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label">Patrimonio total</div>
+    <div class="hero-amount">$ 1.072.500</div>
+    <div class="hero-sub">3 cuentas activas</div>
+    <div class="hero-row">
+      <div class="hero-stat"><div class="hero-stat-val" style="color:#34d399">+$ 450K</div><div class="hero-stat-label">Ingresos</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" style="color:#f87171">-$ 263K</div><div class="hero-stat-label">Gastos</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" style="color:#a5b4fc">+$ 98K</div><div class="hero-stat-label">Neto</div></div>
+    </div>
+  </div>
+
+  <!-- PERIOD TABS -->
+  <div class="period-tabs">
+    <button class="period-tab active">Hoy</button>
+    <button class="period-tab">Este mes</button>
+    <button class="period-tab">Este año</button>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="quick-actions">
+    <button class="qa-btn qa-ingreso"><span style="font-size:1.2rem">💰</span>+ Ingreso</button>
+    <button class="qa-btn qa-egreso"><span style="font-size:1.2rem">📤</span>+ Gasto</button>
+    <button class="qa-btn qa-traslado">🔄 Transferir entre cuentas</button>
+  </div>
+
+  <!-- KPIs del día -->
+  <div class="grid-2" style="margin-bottom:12px">
+    <div class="kpi" style="border-left:3px solid #10b981">
+      <div class="kpi-label">Balance hoy</div>
+      <div class="kpi-value" style="color:#10b981">+$ 446K</div>
+      <div class="kpi-sub">1 movimiento</div>
+    </div>
+    <div class="kpi" style="border-left:3px solid #38bdf8">
+      <div class="kpi-label">Gastos hoy</div>
+      <div class="kpi-value" style="color:#38bdf8">$ 3.200</div>
+      <div class="kpi-icon">📤</div>
+    </div>
+  </div>
+
+  <!-- TIP -->
+  <div class="alert alert-info">💡 Registrá cada gasto del día, por pequeño que sea.</div>
+
+  <!-- MOVIMIENTOS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Últimos movimientos</span>
+      <button style="background:transparent;border:1px solid #334155;color:#94a3b8;border-radius:8px;padding:5px 10px;font-size:.78rem;cursor:pointer">Ver todo →</button>
+    </div>
+    <div class="tx-item">
+      <div class="tx-icon" style="background:#10b98122">💼</div>
+      <div class="tx-info"><div class="tx-name">Salario neto</div><div class="tx-cat">Ingresos</div></div>
+      <div class="tx-amount" style="color:#34d399">+$ 450.000</div>
+    </div>
+    <div class="tx-item">
+      <div class="tx-icon" style="background:#ef444422">🚌</div>
+      <div class="tx-info"><div class="tx-name">SUBE transporte</div><div class="tx-cat">Gastos fijos · ✅ Necesidad</div></div>
+      <div class="tx-amount" style="color:#f87171">-$ 3.200</div>
+    </div>
+    <div class="tx-item">
+      <div class="tx-icon" style="background:#ef444422">🏠</div>
+      <div class="tx-info"><div class="tx-name">Alquiler depto</div><div class="tx-cat">Gastos fijos · ✅ Necesidad</div></div>
+      <div class="tx-amount" style="color:#f87171">-$ 180.000</div>
+    </div>
+    <div class="tx-item">
+      <div class="tx-icon" style="background:#ef444422">☕</div>
+      <div class="tx-info"><div class="tx-name">Café y medialunas</div><div class="tx-cat">Varios · 👍 Gusto</div></div>
+      <div class="tx-amount" style="color:#f87171">-$ 2.500</div>
+    </div>
+    <div class="tx-item">
+      <div class="tx-icon" style="background:#38bdf822">🔄</div>
+      <div class="tx-info"><div class="tx-name">Paso a Mercado Pago</div><div class="tx-cat">Traslado</div></div>
+      <div class="tx-amount" style="color:#7dd3fc">⇄ $ 50.000</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bottom-nav">
+  <button class="bn-item active"><span class="bn-icon">🏠</span>Inicio</button>
+  <button class="bn-item"><span class="bn-icon">💳</span>Movimientos</button>
+  <div class="bn-fab">
+    <button class="bn-fab-btn">＋</button>
+    <span class="bn-fab-label">Registrar</span>
+  </div>
+  <button class="bn-item"><span class="bn-icon">📊</span>Reportes</button>
+  <div style="position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">
+    <!-- Voice FAB flotando sobre el botón Más -->
+    <div id="voice-fab">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="9" y="2" width="6" height="11" rx="3" fill="white"/>
+        <path d="M5 11C5 14.866 8.134 18 12 18C15.866 18 19 14.866 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="18" x2="12" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <line x1="9" y1="22" x2="15" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="bn-icon">☰</span>
+    <span style="font-size:.62rem;font-weight:600;color:#64748b;text-transform:uppercase">Más</span>
+  </div>
+</div>
+
+</body>
+</html>
