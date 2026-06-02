@@ -100,7 +100,7 @@ function injectStyles() {
   const s = document.createElement("style");
   s.id = "vjs-styles";
   s.textContent = `
-    .vjs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9998;display:flex;align-items:flex-end;justify-content:center}
+    .vjs-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.65);z-index:2147483647;display:flex;align-items:flex-end;justify-content:center}
     .vjs-card{background:#1e293b;border-radius:18px 18px 0 0;width:100%;max-width:500px;padding:22px 24px 28px;color:#f1f5f9;box-shadow:0 -4px 24px rgba(0,0,0,.4);animation:vjsUp .25s ease-out;position:relative}
     @keyframes vjsUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     .vjs-close{position:absolute;top:14px;right:18px;background:none;border:none;color:#64748b;font-size:1.3rem;cursor:pointer;line-height:1;padding:4px}
@@ -215,7 +215,7 @@ function startRecognition() {
   r.onstart = () => {
     _listening = true;
     setFabState(true);
-    openBubble();
+    // burbuja ya está abierta desde toggleVoice
   };
 
   r.onresult = e => {
@@ -249,8 +249,18 @@ function startRecognition() {
   r.onend = () => {
     _listening = false;
     setFabState(false);
-    // Si terminó sin resultado, cerrar burbuja después de 1.5s
-    if (!finalText && _bubble) setTimeout(() => { if (_bubble) dismissVoiceCard(); }, 1500);
+    if (!finalText && _bubble) {
+      // Mostrar mensaje de "no se detectó voz"
+      const card = _bubble.querySelector(".vjs-card");
+      if (card) card.innerHTML = `
+        <div style="text-align:center;padding:8px 0">
+          <div style="font-size:2rem;margin-bottom:8px">🎤</div>
+          <div style="font-size:.95rem;font-weight:600;margin-bottom:6px">No se detectó voz</div>
+          <div style="font-size:.82rem;color:#94a3b8;margin-bottom:16px">Hablá más cerca del micrófono e intentá de nuevo</div>
+          <button onclick="window.toggleVoice()" style="padding:10px 24px;background:#14b8a6;color:#fff;border:none;border-radius:40px;font-weight:700;cursor:pointer;font-size:.9rem">🎤 Intentar de nuevo</button>
+          <button onclick="window.dismissVoiceCard()" style="margin-left:10px;padding:10px 16px;background:#334155;color:#fff;border:none;border-radius:40px;font-weight:600;cursor:pointer;font-size:.9rem">Cancelar</button>
+        </div>`;
+    }
   };
 
   r.start();
@@ -279,8 +289,13 @@ export function initVoice(onConfirm, cats) {
 }
 
 export function toggleVoice() {
-  if (_listening) dismissVoiceCard();
-  else startRecognition();
+  if (_listening) {
+    dismissVoiceCard();
+  } else {
+    // Abrir burbuja ANTES de iniciar reconocimiento (garantiza visibilidad)
+    openBubble();
+    startRecognition();
+  }
 }
 
 export function getVoiceParsed() { return _lastParsed; }
