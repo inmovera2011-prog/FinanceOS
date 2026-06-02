@@ -781,8 +781,6 @@ window.deleteTxFromDetail=async(id)=>{if(!confirm('¿Eliminar?'))return;await de
 // ── VOICE BRIDGE ─────────────────────────────────────
 window.toggleVoice=toggleVoice;
 window.dismissVoiceCard=dismissVoiceCard;
-window.confirmVoiceTx=async()=>{const p=getVoiceParsed();if(!p)return;dismissVoiceCard();await openNewTx(p.type==='ahorro'?'egreso':p.type,{...p,categoryId:p.type==='ahorro'?'gas-ahorro':p.categoryId});};
-window.editVoiceTx=async()=>{const p=getVoiceParsed();dismissVoiceCard();if(p)await openNewTx(p.type==='ahorro'?'egreso':p.type,p);};
 
 // ── HELPERS ───────────────────────────────────────────
 function setContent(html){document.getElementById('content').innerHTML=html;}

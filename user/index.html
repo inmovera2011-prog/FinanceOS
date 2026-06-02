@@ -251,16 +251,6 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
   </svg>
   <span class="voice-tooltip" id="voice-tooltip">Decí un gasto o ingreso</span>
 </div>
-<!-- Voice result -->
-<div id="voice-result-card">
-  <div class="vr-transcript" id="vr-transcript"></div>
-  <div class="vr-parsed" id="vr-parsed"></div>
-  <div class="flex gap-2">
-    <button class="btn btn-success btn-sm" onclick="confirmVoiceTx()">✓ Confirmar</button>
-    <button class="btn btn-ghost btn-sm" onclick="editVoiceTx()">✏️ Editar</button>
-    <button class="btn btn-ghost btn-sm" onclick="dismissVoiceCard()">✕</button>
-  </div>
-</div>
 <!-- Modals -->
 <div class="modal-overlay" id="modal-tx" onclick="if(event.target===this)closeModal('modal-tx')">
   <div class="modal">
