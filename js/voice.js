@@ -28,7 +28,9 @@ const CATEGORY_KEYWORDS = {
   "gas-cafe":      ["café","cafe","bar","medialunas","facturas","desayuno","confitería"],
   "gas-ahorro":    ["ahorro","ahorré","ahorre","guardé","guarde","fondo"],
   "ing-salario":   ["salario","sueldo","haberes","quincena"],
-  "ing-negocio":   ["comisión","comision","honorarios","cobré","venta","inmueble"],
+  "ing-negocio":   ["comisión","comision","honorarios","cobré","venta","inmueble","tasación","tasacion","tasa","consultoría","consultoria","proyecto","cliente"],
+  "ing-freelance": ["freelance","trabajo","trabajé","trabaje","changa","proyecto freelance"],
+  "ing-renta":     ["renta","alquiler cobrado","alquiler recibido","propiedad","inmueble alquilado"],
   "gas-inversion": ["invertí","invertiste","inversión","inversion","inversiones","invertido","cedear","acciones","compra acciones","plazo fijo","fci","fondo común","fondo inversión","bonos","letras"],
 };
 
@@ -72,7 +74,9 @@ export function parseVoiceInput(transcript) {
 
   // Monto: primero busca número directo, luego palabras
   let amount = 0;
-  const numMatch = transcript.match(/(\d[\d.,]*)/);
+  // Une dígitos separados por espacio: "120 000" → "120000"
+  const normalized = transcript.replace(/(\d)\s+(?=\d)/g, "$1");
+  const numMatch = normalized.match(/(\d[\d.,]*)/);
   if (numMatch) {
     amount = parseFloat(numMatch[0].replace(/\./g,"").replace(",",".")) || 0;
   }

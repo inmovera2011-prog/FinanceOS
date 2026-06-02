@@ -53,15 +53,15 @@ async function init() {
 
   applyHabilidades();
   // Pasamos las categorías para que el globo muestre nombre e ícono correctos
-  initVoice(parsed => {
-    if (parsed.edit) {
-      openNewTx(parsed.type, parsed);
-    } else if (parsed.amount && parsed.accountId === undefined) {
-      // Confirmar directo → abrir form pre-llenado para elegir cuenta y confirmar
-      openNewTx(parsed.type, parsed);
-    } else {
-      openNewTx(parsed.type, parsed);
+  initVoice(async parsed => {
+    // Intentar detectar cuenta desde la descripción
+    if (!parsed.accountId) {
+      const accounts = await cachedAccounts();
+      const desc = (parsed.description || '').toLowerCase();
+      const match = accounts.find(a => desc.includes(a.name.toLowerCase()));
+      if (match) parsed.accountId = match.id;
     }
+    openNewTx(parsed.type, parsed);
   }, DEFAULT_CATS);
 
   document.querySelectorAll('[data-page]').forEach(el =>
@@ -733,7 +733,7 @@ async function renderTxForm(prefill=null){
       <div class="form-group"><label>Monto</label><div class="input-prefix"><span>${settings.currency==='USD'?'U$S':'$'}</span><input name="amount" type="number" step="0.01" placeholder="0.00" inputmode="decimal" value="${prefill?.amount||''}" required autofocus style="font-size:1.4rem;font-weight:700;padding:14px"></div></div>
       <div class="form-group"><label>Descripción</label><input name="description" placeholder="${isTr?'Ej: Transferencia':'Ej: Almuerzo...'}" value="${prefill?.description||''}"></div>
       ${!isTr?`<div class="form-group"><label>Categoría</label><select name="categoryId" required><option value="">— Seleccioná —</option>${catOpts}</select></div>`:''}
-      <div class="form-group"><label>${isTr?'Cuenta origen':'Cuenta'}</label><select name="accountId" required><option value="">— Seleccioná —</option>${accOpts}</select></div>
+      <div class="form-group"><label>${isTr?'Cuenta origen':'Cuenta'}</label><select name="accountId" required><option value="">— Seleccioná —</option>${accounts.map(a => `<option value="${a.id}" ${prefill?.accountId===a.id?'selected':''}>${a.name}</option>`).join('')}</select></div>
       ${isTr?`<div class="form-group"><label>Cuenta destino</label><select name="toAccountId" required><option value="">— Seleccioná —</option>${accOpts}</select></div>`:''}
       <div class="form-group"><label>Fecha</label><input name="date" type="date" value="${today()}"></div>
       ${isEg?`<div class="form-group"><label>¿Qué tipo de gasto?</label>
