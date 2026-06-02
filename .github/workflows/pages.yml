@@ -27,18 +27,6 @@ jobs:
       - name: Checkout del repo
         uses: actions/checkout@v4
 
-      # Inyectar firebase-config.js desde secret (si está configurado)
-      # Si el secret no existe, usa el archivo commiteado en el repo
-      - name: Inyectar firebase-config.js desde secret
-        if: ${{ secrets.FIREBASE_CONFIG_JSON != '' }}
-        env:
-          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG_JSON }}
-        run: |
-          echo "// Generado automáticamente por GitHub Actions" > js/firebase-config.js
-          echo "const FIREBASE_CONFIG = $FIREBASE_CONFIG;" >> js/firebase-config.js
-          echo "export default FIREBASE_CONFIG;" >> js/firebase-config.js
-          echo "✅ firebase-config.js generado correctamente"
-
       # Configurar GitHub Pages
       - name: Configurar Pages
         uses: actions/configure-pages@v4
