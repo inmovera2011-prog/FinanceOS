@@ -95,78 +95,41 @@ let _bubble = null;
 
 export const voiceSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
-// Estilos con animaciones (necesitan <style>, no se pueden hacer inline)
-function injectStyles() {
-  if (document.getElementById("vjs-styles")) return;
-  const s = document.createElement("style");
-  s.id = "vjs-styles";
-  s.textContent = `
-    @keyframes vjsUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    @keyframes vjsBar{0%{opacity:.35;transform:scaleY(.5)}100%{opacity:1;transform:scaleY(1.2)}}
-  `;
-  document.head.appendChild(s);
-}
+// Helpers para el portal estático en user/index.html
+function portal()     { return document.getElementById("voice-portal"); }
+function cardBody()   { return document.getElementById("voice-card-body"); }
 
 function openBubble() {
-  if (_bubble) { _bubble.remove(); _bubble = null; }
-  injectStyles();
+  const p = portal(); if (!p) return;
+  p.style.display = "flex";
+  // Botón cerrar
+  const closeBtn = document.getElementById("voice-portal-close");
+  if (closeBtn) { closeBtn.onclick = dismissVoiceCard; }
+  // Cerrar al tocar fuera (el overlay)
+  p.onclick = e => { if (e.target === p) dismissVoiceCard(); };
 
-  // Overlay — todo inline para evitar conflictos CSS
-  _bubble = document.createElement("div");
-  Object.assign(_bubble.style, {
-    position:"fixed", top:"0", left:"0", right:"0", bottom:"0",
-    background:"rgba(0,0,0,.7)", zIndex:"2147483647",
-    display:"flex", alignItems:"flex-end", justifyContent:"center",
-    fontFamily:"system-ui,-apple-system,sans-serif",
-  });
+  // Contenido inicial: barras + "escuchando"
+  const body = cardBody(); if (!body) return;
+  body.innerHTML = `
+    <div style="display:flex;gap:5px;align-items:center;justify-content:center;height:44px;margin:8px 0" id="vjs-bars">
+      <div style="width:4px;height:12px;border-radius:2px;background:#14b8a6;animation:vjsBar .5s ease-in-out .4s infinite alternate"></div>
+      <div style="width:4px;height:26px;border-radius:2px;background:#14b8a6;animation:vjsBar .5s ease-in-out .6s infinite alternate"></div>
+      <div style="width:4px;height:18px;border-radius:2px;background:#14b8a6;animation:vjsBar .5s ease-in-out .5s infinite alternate"></div>
+      <div style="width:4px;height:30px;border-radius:2px;background:#14b8a6;animation:vjsBar .5s ease-in-out .7s infinite alternate"></div>
+    </div>
+    <div style="text-align:center;font-size:1rem;font-weight:600;color:#94a3b8;margin:8px 0 4px">Escuchando... hablá ahora</div>
+    <div id="vjs-interim" style="font-style:italic;font-size:.9rem;color:#cbd5e1;text-align:center;min-height:24px;padding:4px 0"></div>`;
 
-  // Card
-  const card = document.createElement("div");
-  card.id = "vjs-card";
-  Object.assign(card.style, {
-    background:"#1e293b", borderRadius:"18px 18px 0 0",
-    width:"100%", maxWidth:"500px", padding:"22px 24px 28px",
-    color:"#f1f5f9", boxShadow:"0 -4px 24px rgba(0,0,0,.5)",
-    animation:"vjsUp .25s ease-out", position:"relative",
-  });
-
-  // Barras de sonido
-  const bars = document.createElement("div");
-  Object.assign(bars.style, { display:"flex", gap:"5px", alignItems:"center", justifyContent:"center", height:"44px", margin:"8px 0" });
-  [{ h:"12px", d:".4s" },{ h:"26px", d:".6s" },{ h:"18px", d:".5s" },{ h:"30px", d:".7s" }].forEach(b => {
-    const bar = document.createElement("div");
-    Object.assign(bar.style, { width:"4px", height:b.h, borderRadius:"2px", background:"#14b8a6", animation:`vjsBar .5s ease-in-out ${b.d} infinite alternate` });
-    bars.appendChild(bar);
-  });
-
-  const title = document.createElement("div");
-  title.textContent = "Escuchando... hablá ahora";
-  Object.assign(title.style, { textAlign:"center", fontSize:"1rem", fontWeight:"600", color:"#94a3b8", margin:"8px 0 4px" });
-
-  const interim = document.createElement("div");
-  interim.id = "vjs-interim";
-  Object.assign(interim.style, { fontStyle:"italic", fontSize:".9rem", color:"#cbd5e1", textAlign:"center", minHeight:"24px", padding:"4px 0" });
-
-  const closeBtn = document.createElement("button");
-  closeBtn.textContent = "✕";
-  Object.assign(closeBtn.style, { position:"absolute", top:"14px", right:"18px", background:"none", border:"none", color:"#64748b", fontSize:"1.3rem", cursor:"pointer", lineHeight:"1", padding:"4px" });
-  closeBtn.addEventListener("click", dismissVoiceCard);
-
-  card.appendChild(closeBtn);
-  card.appendChild(bars);
-  card.appendChild(title);
-  card.appendChild(interim);
-  _bubble.appendChild(card);
-
-  // Cerrar al tocar fuera
-  _bubble.addEventListener("click", e => { if (e.target === _bubble) dismissVoiceCard(); });
-
-  // Adjuntar al <html>, no al <body>, para evitar overflow:hidden
-  document.documentElement.appendChild(_bubble);
+  // Inyectar animación una sola vez
+  if (!document.getElementById("vjs-anim")) {
+    const s = document.createElement("style"); s.id = "vjs-anim";
+    s.textContent = `@keyframes vjsBar{0%{opacity:.3;transform:scaleY(.5)}100%{opacity:1;transform:scaleY(1.3)}}`;
+    document.head.appendChild(s);
+  }
 }
 
 function showResult(parsed) {
-  const card = document.getElementById("vjs-card");
+  const card = cardBody();
   if (!card) return;
   const cats = window._voiceCats || [];
   const cat  = cats.find(c => c.id === parsed.categoryId) || { name:"Otro", icon:"📦" };
@@ -211,7 +174,8 @@ function showResult(parsed) {
 }
 
 export function dismissVoiceCard() {
-  if (_bubble) { _bubble.remove(); _bubble = null; }
+  const p = portal();
+  if (p) p.style.display = "none";
   if (_recognition && _listening) { try { _recognition.stop(); } catch {} }
   _listening = false;
   setFabState(false);
@@ -277,9 +241,8 @@ function startRecognition() {
   r.onend = () => {
     _listening = false;
     setFabState(false);
-    if (!finalText && _bubble) {
-      // Mostrar mensaje de "no se detectó voz"
-      const card = _bubble.querySelector(".vjs-card");
+    if (!finalText && portal()?.style.display !== "none") {
+      const card = cardBody();
       if (card) card.innerHTML = `
         <div style="text-align:center;padding:8px 0">
           <div style="font-size:2rem;margin-bottom:8px">🎤</div>
