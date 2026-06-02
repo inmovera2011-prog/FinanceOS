@@ -24,7 +24,7 @@ import { DEFAULT_CATS, HABILIDADES,
 let profile    = null;
 let habs       = {};
 let settings   = { ...DEFAULT_SETTINGS };
-let homePeriod = 'mes';
+let homePeriod = 'hoy';
 let currentPage = 'inicio';
 let activeCharts = {};
 let txState    = { type:'egreso', psychFilter:null, cooldownHours:0 };
@@ -166,14 +166,16 @@ async function renderInicio() {
       <div class="kpi ${periodData.neto>=0?'green':'red'}"><div class="kpi-label">Balance de hoy</div><div class="kpi-value">${fmtShort(periodData.neto)}</div><div class="kpi-sub">${periodTxs.length} movimiento(s)</div></div>
       <div class="kpi blue"><div class="kpi-label">Gastos hoy</div><div class="kpi-value">${fmtShort(periodData.egresos)}</div><div class="kpi-icon">📤</div></div>
     </div>
-    <div class="alert alert-info">💡 Registrá cada gasto del día, por pequeño que sea. El control empieza en los detalles.</div>`:''}
+    <div class="alert alert-info">💡 Registrá cada gasto del día, por pequeño que sea.</div>`:''}
 
-    ${homePeriod==='mes' && emGoal?`
+    ${homePeriod==='mes' && habs.presupuesto ? presupuestoCompacto(periodTxs, periodData) : ''}
+
+    ${homePeriod==='mes' && emGoal && habs.objetivos ?`
     <div class="card mb-3">
       <div class="card-header"><span class="card-title">🛡️ Fondo de Emergencia</span><button class="btn btn-ghost btn-sm" onclick="navigate('objetivos')">→</button></div>
       <div class="flex justify-between fs-sm mb-2"><span>${fmt(emGoal.currentAmount)}</span><span class="text-2">${fmt(emGoal.targetAmount)}</span></div>
       <div class="progress-bar"><div class="progress-fill" style="width:${emPct}%;background:${emPct>=100?'var(--success)':emPct>50?'var(--warning)':'var(--danger)'}"></div></div>
-      <div class="fs-xs text-2 mt-2">${emPct.toFixed(1)}% — ${emGoal.months||6} meses de gastos</div>
+      <div class="fs-xs text-2 mt-2">${emPct.toFixed(1)}% — ${emGoal.months||6} meses</div>
     </div>`:''}
 
     ${homePeriod==='año'?`
@@ -188,10 +190,59 @@ async function renderInicio() {
       <div class="card-header"><span class="card-title">Últimos movimientos</span><button class="btn btn-ghost btn-sm" onclick="navigate('movimientos')">Ver todo →</button></div>
       ${renderTxList(periodTxs.slice(0,12))}
     </div>
+
+    ${homePeriod==='mes' && habs.graficos ? `<div class="card mt-3"><div class="card-title">📉 Gasto diario</div><div class="chart-wrap h200"><canvas id="chart-daily"></canvas></div></div>` : ''}
   `);
+
+  if (homePeriod==='mes' && habs.graficos) setTimeout(() => renderDailyChart(), 50);
 }
 
 window.setPeriod = (p) => { homePeriod=p; renderInicio(); };
+
+// 50/30/20 compacto para el home
+function presupuestoCompacto(txs, totals) {
+  if (!totals.ingresos) return '';
+  const cats = DEFAULT_CATS;
+  let fijos=0, variables=0, ahorro=0;
+  const catTot = calcCategoryTotals(txs, cats);
+  Object.entries(catTot).forEach(([cid,amt]) => {
+    const cat = cats.find(c=>c.id===cid); if(!cat) return;
+    if (cat.macro==='Gastos fijos') fijos+=amt;
+    else if (cat.macro==='Estilo de vida'||cat.macro==='Varios') variables+=amt;
+    else if (cat.macro==='Ahorro/Inversión') ahorro+=amt;
+  });
+  const rows = [
+    {l:'Gastos fijos', v:fijos,   t:settings.needs||50,    c:'var(--info)'},
+    {l:'Variables',    v:variables,t:settings.wants||30,   c:'var(--primary)'},
+    {l:'Ahorro',       v:ahorro,   t:settings.savings||20, c:'var(--success)'},
+  ];
+  return `<div class="card mb-3" style="padding:12px">
+    <div class="card-header" style="margin-bottom:8px"><span class="card-title">Presupuesto este mes</span><button class="btn btn-ghost btn-sm" onclick="navigate('presupuesto')">→</button></div>
+    ${rows.map(r=>{const pct=Math.min(100,(r.v/totals.ingresos)*100);const over=pct>r.t;return `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:4px">
+          <span>${r.l}</span>
+          <span style="color:${over?'var(--danger)':'var(--text2)'}">${pct.toFixed(0)}% <span style="color:var(--text3)">/ ${r.t}%</span></span>
+        </div>
+        <div class="progress-bar" style="height:6px"><div class="progress-fill" style="width:${pct}%;background:${over?'var(--danger)':r.c}"></div></div>
+      </div>`;}).join('')}
+  </div>`;
+}
+
+function renderDailyChart() {
+  const ctx = document.getElementById('chart-daily'); if(!ctx) return;
+  if(activeCharts.daily){activeCharts.daily.destroy();delete activeCharts.daily;}
+  const ym = monthKey();
+  const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+  const dailyEg = Array(daysInMonth).fill(0);
+  (cachedTxsSync()||[]).filter(t=>t.date.startsWith(ym)&&t.type==='egreso').forEach(t=>{
+    const day=parseInt(t.date.slice(8,10))-1; if(day>=0) dailyEg[day]+=t.amount;
+  });
+  const avg=dailyEg.filter(v=>v>0).reduce((a,b)=>a+b,0)/(dailyEg.filter(v=>v>0).length||1);
+  activeCharts.daily=new Chart(ctx,{type:'bar',data:{labels:Array.from({length:daysInMonth},(_,i)=>i+1),datasets:[{data:dailyEg,backgroundColor:dailyEg.map(v=>v>avg*1.5?'#ef4444aa':'#6366f1aa'),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#64748b',font:{size:9},maxTicksLimit:10},grid:{display:false}},y:{ticks:{color:'#64748b',font:{size:9},callback:v=>fmtShort(v)},grid:{color:'#33415566'}}}}});
+}
+// Necesitamos acceso síncrono al cache para el chart
+function cachedTxsSync() { return _cache.txs; }
 
 // ════════════════════════════════════════════════
 // MOVIMIENTOS
@@ -508,6 +559,7 @@ async function renderCredito(){
         return `<div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin-bottom:8px"><div class="flex justify-between items-center"><span class="fw-bold fs-sm">${c.name}</span><span class="badge badge-green">🟢 ~${w} días</span></div><div class="fs-xs text-2 mt-1">Cierre: día ${c.cutDate} · Pago: día ${c.payDate}</div></div>`;}).join('')||'<div class="fs-sm text-2">Agregá tarjetas para ver el calendario.</div>'}
     </div>
     ${cards.filter(c=>c.balance>0).length?`<div class="card mb-3"><div class="card-title">🧘 Plan Avalancha</div><div class="alert alert-info mb-3 fs-sm">Pagá primero la de mayor tasa.</div>${cards.filter(c=>c.balance>0).sort((a,b)=>(b.apr||0)-(a.apr||0)).map(c=>`<div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin-bottom:8px"><div class="flex justify-between mb-1"><span class="fw-bold fs-sm">${c.name}</span><span class="text-danger fw-bold">${fmt(c.balance)}</span></div><div class="fs-xs text-2">APR: ${c.apr||'?'}%</div><div class="progress-bar mt-2" style="height:5px"><div class="progress-fill" style="width:${Math.min(100,c.balance/(c.limit||c.balance)*100)}%;background:var(--danger)"></div></div></div>`).join('')}</div>`:''}
+    ${habs.simulador?`<div class="card mb-3"><div class="card-title">🏦 Simulador de crédito</div><form id="lev-form" onsubmit="calcLeverage(event)"><div class="form-row"><div class="form-group"><label>Precio del activo</label><div class="input-prefix"><span>$</span><input name="price" type="number" value="50000000" inputmode="decimal"></div></div><div class="form-group"><label>Entrada (%)</label><input name="down" type="number" value="30" step="5" inputmode="numeric"></div></div><div class="form-row"><div class="form-group"><label>Tasa hipoteca (%)</label><input name="rate" type="number" value="8" step="0.5" inputmode="decimal"></div><div class="form-group"><label>Años</label><input name="years" type="number" value="20" inputmode="numeric"></div></div><div class="form-group"><label>Rentabilidad neta anual (%)</label><input name="yield" type="number" value="6" step="0.5" inputmode="decimal"></div><button class="btn btn-primary btn-block" type="submit">Calcular</button></form><div id="lev-result" class="mt-3"></div></div>` : ''}
   `);
 }
 
@@ -610,15 +662,41 @@ async function renderConfiguracion(){
         <button class="btn btn-primary btn-block" type="submit">Guardar</button>
       </form>
     </div>
-    <div class="card mb-3"><div class="card-title">Datos</div>
-      <button class="btn btn-ghost btn-sm" onclick="exportData()">📥 Exportar JSON</button>
-    </div>
+    ${habs.exportar||habs.importar?`<div class="card mb-3"><div class="card-title">Datos</div>
+      <div class="flex gap-2">
+        ${habs.exportar?`<button class="btn btn-ghost btn-sm" onclick="exportData()">📥 Exportar JSON</button>`:''}
+        ${habs.importar?`<button class="btn btn-ghost btn-sm" onclick="importData()">📤 Importar CSV</button>`:''}
+      </div>
+    </div>`:''}
+
     <div class="card"><button class="btn btn-danger btn-block" onclick="handleLogout()">🚪 Cerrar sesión</button></div>
   `);
 }
 
 window.submitConfig=async(e)=>{e.preventDefault();const fd=new FormData(e.target);settings.currency=fd.get('currency');settings.payYourselfFirst=parseInt(fd.get('pyf'));await saveSettings(settings);alert('✅ Guardado');};
 window.exportData=async()=>{const [txs,accounts,goals,cards]=await Promise.all([getTransactions(),getAccounts(),getGoals(),getCards()]);const blob=new Blob([JSON.stringify({txs,accounts,goals,cards,settings},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`financeos-backup.json`;a.click();};
+
+window.importData=()=>{
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.onchange=async e=>{const f=e.target.files[0];if(!f)return;
+    const text=await f.text();try{const d=JSON.parse(text);
+      if(d.txs)  for(const t of d.txs)  await addTransaction(t);
+      if(d.accounts) for(const a of d.accounts) await saveAccount(a);
+      alert(`✅ Importados: ${d.txs?.length||0} movimientos, ${d.accounts?.length||0} cuentas`);
+      clearCache();navigate(currentPage);
+    }catch{alert('Archivo inválido. Debe ser un JSON exportado por FinanceOS.');}
+  };input.click();
+};
+
+window.calcLeverage=(e)=>{
+  e.preventDefault();const fd=new FormData(e.target);
+  const price=parseFloat(fd.get('price')),down=parseFloat(fd.get('down'))/100,
+        rate=parseFloat(fd.get('rate'))/100/12,years=parseInt(fd.get('years')),yld=parseFloat(fd.get('yield'))/100;
+  const loan=price*(1-down);const n=years*12;
+  const monthly=loan*(rate*Math.pow(1+rate,n))/(Math.pow(1+rate,n)-1);
+  const cashflow=price*yld/12-monthly;
+  document.getElementById('lev-result').innerHTML=`<div class="grid-2 mb-2" style="gap:8px"><div class="kpi" style="padding:12px"><div class="kpi-label">Cuota mensual</div><div class="kpi-value" style="font-size:1.1rem">${fmt(monthly)}</div></div><div class="kpi ${cashflow>=0?'green':'red'}" style="padding:12px"><div class="kpi-label">Flujo mensual</div><div class="kpi-value" style="font-size:1.1rem">${cashflow>=0?'+':''}${fmt(cashflow)}</div></div></div><div class="alert ${cashflow>=0?'alert-success':'alert-warning'} fs-sm">${cashflow>=0?'✅ El activo se autofinancia.':'⚠️ La cuota supera la renta.'}</div>`;
+};
 
 // ════════════════════════════════════════════════
 // TRANSACTION FORM

@@ -28,16 +28,16 @@ export const DEFAULT_CATS = [
   {id:'ing-bono',       name:'Bono / Aguinaldo',     type:'ingreso', macro:'Ingresos',        icon:'🎁'},
   {id:'ing-otro',       name:'Otro ingreso',         type:'ingreso', macro:'Ingresos',        icon:'💰'},
   // Necesidades
-  {id:'gas-alquiler',   name:'Alquiler / Hipoteca',  type:'egreso',  macro:'Necesidades',     icon:'🏠'},
-  {id:'gas-comida',     name:'Supermercado',         type:'egreso',  macro:'Necesidades',     icon:'🛒'},
-  {id:'gas-luz',        name:'Electricidad',         type:'egreso',  macro:'Necesidades',     icon:'💡'},
-  {id:'gas-agua',       name:'Agua',                 type:'egreso',  macro:'Necesidades',     icon:'🚿'},
-  {id:'gas-internet',   name:'Internet / Telefonía', type:'egreso',  macro:'Necesidades',     icon:'📶'},
-  {id:'gas-gas',        name:'Gas',                  type:'egreso',  macro:'Necesidades',     icon:'🔥'},
-  {id:'gas-transporte', name:'Transporte / SUBE',    type:'egreso',  macro:'Necesidades',     icon:'🚌'},
-  {id:'gas-salud',      name:'Salud / Obra social',  type:'egreso',  macro:'Necesidades',     icon:'🏥'},
-  {id:'gas-seguro',     name:'Seguros',              type:'egreso',  macro:'Necesidades',     icon:'🛡️'},
-  {id:'gas-educacion',  name:'Educación',            type:'egreso',  macro:'Necesidades',     icon:'📚'},
+  {id:'gas-alquiler',   name:'Alquiler / Hipoteca',  type:'egreso',  macro:'Gastos fijos',     icon:'🏠'},
+  {id:'gas-comida',     name:'Supermercado',         type:'egreso',  macro:'Gastos fijos',     icon:'🛒'},
+  {id:'gas-luz',        name:'Electricidad',         type:'egreso',  macro:'Gastos fijos',     icon:'💡'},
+  {id:'gas-agua',       name:'Agua',                 type:'egreso',  macro:'Gastos fijos',     icon:'🚿'},
+  {id:'gas-internet',   name:'Internet / Telefonía', type:'egreso',  macro:'Gastos fijos',     icon:'📶'},
+  {id:'gas-gas',        name:'Gas',                  type:'egreso',  macro:'Gastos fijos',     icon:'🔥'},
+  {id:'gas-transporte', name:'Transporte / SUBE',    type:'egreso',  macro:'Gastos fijos',     icon:'🚌'},
+  {id:'gas-salud',      name:'Salud / Obra social',  type:'egreso',  macro:'Gastos fijos',     icon:'🏥'},
+  {id:'gas-seguro',     name:'Seguros',              type:'egreso',  macro:'Gastos fijos',     icon:'🛡️'},
+  {id:'gas-educacion',  name:'Educación',            type:'egreso',  macro:'Gastos fijos',     icon:'📚'},
   // Estilo de vida
   {id:'gas-restaurant', name:'Restaurantes/Delivery',type:'egreso',  macro:'Estilo de vida',  icon:'🍽️'},
   {id:'gas-entret',     name:'Entretenimiento',      type:'egreso',  macro:'Estilo de vida',  icon:'🎬'},
@@ -62,26 +62,30 @@ export const DEFAULT_CATS = [
 ];
 
 export const HABILIDADES = [
-  {id:'presupuesto', icon:'📋', name:'Presupuesto 50/30/20',    desc:'Gestión mensual por categoría.',             minScore:0,  page:'presupuesto'},
-  {id:'movimientos', icon:'💳', name:'Registro de movimientos', desc:'Ingresos, gastos y transferencias.',         minScore:0,  page:'movimientos'},
-  {id:'objetivos',   icon:'🛡️', name:'Fondo de Emergencia',    desc:'Metas de ahorro y fondo de seguridad.',      minScore:20, page:'objetivos'  },
-  {id:'credito',     icon:'💳', name:'Crédito y Deuda',         desc:'Tarjetas, préstamos y apalancamiento.',      minScore:30, page:'credito'    },
-  {id:'reportes',    icon:'📊', name:'Reportes & Análisis',     desc:'Históricos y tendencias de gasto.',          minScore:40, page:'reportes'   },
-  {id:'inversiones', icon:'📈', name:'Inversiones',             desc:'Interés compuesto, cartera 80/20 y DCA.',   minScore:60, page:'inversiones'},
-  {id:'educacion',   icon:'🎓', name:'Educación Financiera',    desc:'Conceptos y estrategias clave.',             minScore:0,  page:'educacion'  },
+  {id:'movimientos', icon:'💳', name:'Registro de movimientos', desc:'Ingresos, gastos y transferencias diarias.',        page:'movimientos'},
+  {id:'presupuesto', icon:'📋', name:'Presupuesto',              desc:'Seguimiento de gastos fijos, variables y ahorro.',  page:'presupuesto'},
+  {id:'objetivos',   icon:'🛡️', name:'Fondo de Emergencia',     desc:'Fondo de seguridad y otros objetivos.',             page:'objetivos'  },
+  {id:'inversiones', icon:'📈', name:'Inversiones',              desc:'Interés compuesto y cartera 80/20.',                page:'inversiones'},
+  {id:'simulador',   icon:'🏦', name:'Simulador de crédito',     desc:'Calculadora de apalancamiento hipotecario.',        page:null         },
+  {id:'credito',     icon:'💳', name:'Crédito y Deuda',          desc:'Tarjetas y gestión de deuda.',                      page:'credito'    },
+  {id:'reportes',    icon:'📊', name:'Reportes & Análisis',      desc:'Históricos, tendencias y top gastos.',              page:'reportes'   },
+  {id:'graficos',    icon:'📉', name:'Gráficos en dashboard',    desc:'Gráfico de gasto diario en la pantalla principal.', page:null         },
+  {id:'educacion',   icon:'🎓', name:'Educación Financiera',     desc:'Conceptos y estrategias clave.',                    page:'educacion'  },
+  {id:'exportar',    icon:'📥', name:'Exportar datos',           desc:'Descargar backup en CSV/JSON.',                     page:null         },
+  {id:'importar',    icon:'📤', name:'Importar datos',           desc:'Cargar transacciones desde CSV con plantilla.',     page:null         },
 ];
 
 export const DEFAULT_HABS = {
-  presupuesto:true, movimientos:true, objetivos:false,
-  credito:false, reportes:false, inversiones:false, educacion:true
+  movimientos:true, presupuesto:false, objetivos:false,
+  inversiones:false, simulador:false, credito:false,
+  reportes:false, graficos:false, educacion:true,
+  exportar:false, importar:false,
 };
 
-// Habilidades por situación al crear un agente
 export const HABS_BY_SITUATION = {
-  'nuevo':          {presupuesto:true,  movimientos:true,  objetivos:false, credito:false, reportes:false, inversiones:false, educacion:true},
-  'en-crecimiento': {presupuesto:true,  movimientos:true,  objetivos:true,  credito:false, reportes:false, inversiones:false, educacion:true},
-  'estable':        {presupuesto:true,  movimientos:true,  objetivos:true,  credito:true,  reportes:true,  inversiones:false, educacion:true},
-  'avanzado':       {presupuesto:true,  movimientos:true,  objetivos:true,  credito:true,  reportes:true,  inversiones:true,  educacion:true},
+  'basico':   {movimientos:true, presupuesto:false, objetivos:false, inversiones:false, simulador:false, credito:false, reportes:false, graficos:false, educacion:true,  exportar:false, importar:false},
+  'medio':    {movimientos:true, presupuesto:true,  objetivos:true,  inversiones:false, simulador:false, credito:true,  reportes:false, graficos:false, educacion:true,  exportar:false, importar:false},
+  'avanzado': {movimientos:true, presupuesto:true,  objetivos:true,  inversiones:true,  simulador:true,  credito:true,  reportes:true,  graficos:true,  educacion:true,  exportar:true,  importar:true },
 };
 
 // Utilitarios de formato
