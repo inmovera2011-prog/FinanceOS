@@ -264,18 +264,18 @@ export function initVoice(onConfirm, cats) {
   if (cats) window._voiceCats = cats;
 
   const fab = document.getElementById("voice-fab");
-  if (fab) {
-    fab.classList.remove("hidden");
-    // Reemplazar el onclick inline por event listener limpio
-    fab.onclick = null;
-    fab.addEventListener("click", toggleVoice, { once: false });
-  }
+  if (!fab) return;
 
-  if (!voiceSupported && fab) {
+  fab.classList.remove("hidden");
+
+  if (!voiceSupported) {
     fab.style.opacity = ".4";
     fab.style.cursor  = "not-allowed";
+    // Reemplazar onclick solo si no hay soporte
     fab.onclick = () => alert("Tu navegador no soporta reconocimiento de voz.\nUsá Google Chrome o Microsoft Edge.");
   }
+  // El click lo maneja window.toggleVoice (asignado en user-app.js)
+  // desde el onclick="toggleVoice()" del HTML — no agregar segundo listener
 }
 
 export function toggleVoice() {
