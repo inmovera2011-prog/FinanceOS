@@ -52,7 +52,17 @@ async function init() {
   if (av) av.textContent = (profile.name || 'U')[0].toUpperCase();
 
   applyHabilidades();
-  initVoice(parsed => openNewTx(parsed.type === 'ahorro' ? 'egreso' : parsed.type, parsed));
+  // Pasamos las categorías para que el globo muestre nombre e ícono correctos
+  initVoice(parsed => {
+    if (parsed.edit) {
+      openNewTx(parsed.type, parsed);
+    } else if (parsed.amount && parsed.accountId === undefined) {
+      // Confirmar directo → abrir form pre-llenado para elegir cuenta y confirmar
+      openNewTx(parsed.type, parsed);
+    } else {
+      openNewTx(parsed.type, parsed);
+    }
+  }, DEFAULT_CATS);
 
   document.querySelectorAll('[data-page]').forEach(el =>
     el.addEventListener('click', () => navigate(el.dataset.page))
