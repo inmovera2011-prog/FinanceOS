@@ -585,8 +585,19 @@ function renderEducacion(){
 }
 
 function renderMas(){
-  const items=[{icon:'🏦',label:'Cuentas',page:'cuentas'},{icon:'📋',label:'Presupuesto',page:'presupuesto'},{icon:'🛡️',label:'Fondo Emergencia',page:'objetivos'},{icon:'📈',label:'Inversiones',page:'inversiones'},{icon:'💳',label:'Crédito y Deuda',page:'credito'},{icon:'📊',label:'Reportes',page:'reportes'},{icon:'🎓',label:'Educación',page:'educacion'},{icon:'⚙️',label:'Configuración',page:'configuracion'}];
-  setContent(`<div class="card">${items.map(item=>`<div class="flex items-center gap-3" style="padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="navigate('${item.page}')"><span style="font-size:1.3rem;width:30px;text-align:center">${item.icon}</span><span class="fw-bold">${item.label}</span><span class="text-3" style="margin-left:auto">›</span></div>`).join('')}</div>`);
+  // Solo mostrar módulos habilitados (+ páginas siempre visibles)
+  const allItems=[
+    {icon:'🏦',label:'Cuentas',page:'cuentas',hab:null},
+    {icon:'📋',label:'Presupuesto',page:'presupuesto',hab:'presupuesto'},
+    {icon:'🛡️',label:'Fondo Emergencia',page:'objetivos',hab:'objetivos'},
+    {icon:'📈',label:'Inversiones',page:'inversiones',hab:'inversiones'},
+    {icon:'💳',label:'Crédito y Deuda',page:'credito',hab:'credito'},
+    {icon:'📊',label:'Reportes',page:'reportes',hab:'reportes'},
+    {icon:'🎓',label:'Educación',page:'educacion',hab:'educacion'},
+    {icon:'⚙️',label:'Configuración',page:'configuracion',hab:null},
+  ];
+  const items = allItems.filter(i => !i.hab || habs[i.hab]);
+  setContent(`<div class="card">${items.map(i=>`<div class="flex items-center gap-3" style="padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="navigate('${i.page}')"><span style="font-size:1.3rem;width:30px;text-align:center">${i.icon}</span><span class="fw-bold">${i.label}</span><span class="text-3" style="margin-left:auto">›</span></div>`).join('')}</div>`);
 }
 
 async function renderConfiguracion(){
