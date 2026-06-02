@@ -4,8 +4,9 @@
 
 // Palabras clave para tipos
 const TYPE_KEYWORDS = {
-  egreso:       ["gasté","gaste","pagué","pague","compré","compre"],
-  ingreso:      ["cobré","cobr","recibí","recibi","gané","gane","ingresé","ingrese"],
+  egreso:       ["gasté","gaste","pagué","pague","compré","compre","pago","gasto","compra"],
+  ingreso:      ["cobré","cobr","recibí","recibi","gané","gane","ingresé","ingrese","ingreso","cobro","cobra","depósito","deposito","transferencia","honorarios","comisión","comisiones"],
+  inversion:    ["invertí","invertiste","inversión","inversion","inversiones","invertido","cedear","acciones","plazo fijo","fci","fondo común"],
   ahorroEgreso: ["guardé","guarde","ahorré","ahorre"],
 };
 
@@ -28,6 +29,7 @@ const CATEGORY_KEYWORDS = {
   "gas-ahorro":    ["ahorro","ahorré","ahorre","guardé","guarde","fondo"],
   "ing-salario":   ["salario","sueldo","haberes","quincena"],
   "ing-negocio":   ["comisión","comision","honorarios","cobré","venta","inmueble"],
+  "gas-inversion": ["invertí","invertiste","inversión","inversion","inversiones","invertido","cedear","acciones","compra acciones","plazo fijo","fci","fondo común","fondo inversión","bonos","letras"],
 };
 
 const NUM_WORDS = {
@@ -56,13 +58,16 @@ function wordsToNumber(text) {
 export function parseVoiceInput(transcript) {
   const lower = transcript.toLowerCase();
   let type = "egreso", categoryId = null;
+  let typeExplicit = false;
 
   if (TYPE_KEYWORDS.ahorroEgreso.some(k => lower.includes(k))) {
-    type = "egreso"; categoryId = "gas-ahorro";
+    type = "egreso"; categoryId = "gas-ahorro"; typeExplicit = true;
+  } else if (TYPE_KEYWORDS.inversion.some(k => lower.includes(k))) {
+    type = "egreso"; categoryId = "gas-inversion"; typeExplicit = true;
   } else if (TYPE_KEYWORDS.ingreso.some(k => lower.includes(k))) {
-    type = "ingreso";
+    type = "ingreso"; typeExplicit = true;
   } else if (TYPE_KEYWORDS.egreso.some(k => lower.includes(k))) {
-    type = "egreso";
+    type = "egreso"; typeExplicit = true;
   }
 
   // Monto: primero busca número directo, luego palabras
@@ -79,6 +84,12 @@ export function parseVoiceInput(transcript) {
       if (kws.some(k => lower.includes(k))) { categoryId = id; break; }
     }
   }
+
+  // Si no se dijo un tipo explícito pero la categoría es de ingreso, corregir tipo
+  if (!typeExplicit && categoryId && categoryId.startsWith("ing-")) {
+    type = "ingreso";
+  }
+
   if (!categoryId) categoryId = type === "ingreso" ? "ing-otro" : "gas-otro";
 
   return { type, amount, categoryId, description: transcript.trim(), transcript, confidence: 0.85 };
@@ -133,7 +144,8 @@ function showResult(parsed) {
   if (!card) return;
   const cats = window._voiceCats || [];
   const cat  = cats.find(c => c.id === parsed.categoryId) || { name:"Otro", icon:"📦" };
-  const typeLabel = parsed.type === "ingreso" ? "💰 Ingreso" : "📤 Gasto";
+  const esInv = parsed.type === "egreso" && cat?.macro === "Ahorro/Inversión";
+  const typeLabel = parsed.type === "ingreso" ? "💰 Ingreso" : esInv ? "📊 Inversión" : "📤 Gasto";
   const amtFmt = parsed.amount
     ? "$ " + parsed.amount.toLocaleString("es-AR", {minimumFractionDigits:0})
     : "Monto no detectado";
