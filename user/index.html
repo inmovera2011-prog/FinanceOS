@@ -44,7 +44,7 @@ nav{flex:1;padding:8px;overflow-y:auto}
 #sidebar-overlay.open{display:block}
 /* VOICE FAB */
 #voice-fab{
-  position:fixed;left:16px;bottom:calc(var(--nav-h) + 20px + var(--safe-bottom));
+  position:fixed;right:16px;bottom:calc(var(--nav-h) + 20px + var(--safe-bottom));
   width:56px;height:56px;border-radius:50%;
   background:linear-gradient(145deg,#0d9488,#14b8a6,#06b6d4);
   border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
@@ -72,7 +72,7 @@ nav{flex:1;padding:8px;overflow-y:auto}
   100%{width:90px;height:90px;opacity:0}
 }
 .voice-tooltip{
-  position:absolute;left:66px;
+  position:absolute;right:66px;
   background:rgba(15,23,42,.95);border:1px solid var(--border);
   color:var(--text);font-size:.73rem;font-weight:600;
   padding:6px 12px;border-radius:20px;white-space:nowrap;
@@ -81,7 +81,7 @@ nav{flex:1;padding:8px;overflow-y:auto}
 }
 #voice-fab:hover .voice-tooltip{opacity:1}
 #voice-fab.listening .voice-tooltip{opacity:1;background:#7f1d1d;border-color:#ef4444;color:#fca5a5}
-#voice-result-card{display:none;position:fixed;left:16px;right:16px;bottom:calc(var(--nav-h) + 90px + var(--safe-bottom));background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;z-index:291;box-shadow:0 8px 32px #0008;animation:cardIn .2s ease}
+#voice-result-card{display:none;position:fixed;left:16px;right:80px;bottom:calc(var(--nav-h) + 90px + var(--safe-bottom));background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;z-index:291;box-shadow:0 8px 32px #0008;animation:cardIn .2s ease}
 @keyframes cardIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
 #voice-result-card .vr-transcript{font-size:.78rem;color:var(--text2);margin-bottom:8px;font-style:italic}
 #voice-result-card .vr-parsed{font-size:.9rem;font-weight:700;margin-bottom:10px}
