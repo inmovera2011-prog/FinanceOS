@@ -77,7 +77,18 @@ export function parseVoiceInput(transcript) {
   const normalized = transcript.replace(/(\d)\s+(?=\d)/g, "$1");
   const numMatch = normalized.match(/(\d[\d.,]*)/);
   if (numMatch) {
-    amount = parseFloat(numMatch[0].replace(/\./g,"").replace(",",".")) || 0;
+    let raw = numMatch[0];
+    // Comma como separador de miles ("10,000", "1,234,567")
+    if (/,\d{3}/.test(raw)) {
+      raw = raw.replace(/,/g, "");
+    }
+    // Punto como separador de miles ("10.000", "1.234.567")
+    else if (/\.\d{3}/.test(raw) && raw.includes(".")) {
+      raw = raw.replace(/\./g, "");
+    }
+    // Cualquier coma restante es decimal
+    raw = raw.replace(",", ".");
+    amount = parseFloat(raw) || 0;
   }
   // wordsToNumber suma "mil", "millón", etc. aunque haya dígitos
   const wordAmount = wordsToNumber(transcript) || 0;
