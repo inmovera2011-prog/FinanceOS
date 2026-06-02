@@ -130,7 +130,7 @@ function injectStyles() {
 }
 
 function openBubble() {
-  closeBubble();
+  if (_bubble) { _bubble.remove(); _bubble = null; }
   injectStyles();
   _bubble = document.createElement("div");
   _bubble.className = "vjs-overlay";
