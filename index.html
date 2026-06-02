@@ -5,311 +5,277 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f172a">
-<title>FinanceOS — Acceder</title>
+<title>FinanceOS</title>
 <link rel="stylesheet" href="css/styles.css">
 <style>
-/* ── LOGIN PAGE SPECIFIC ── */
-body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.login-wrap{width:100%;max-width:420px}
-.login-logo{text-align:center;margin-bottom:32px}
-.login-logo-text{font-size:2rem;font-weight:900;color:var(--primary);letter-spacing:-1px}
-.login-logo-text span{color:var(--text2);font-weight:400}
-.login-logo-sub{font-size:.82rem;color:var(--text3);margin-top:4px}
-.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px 24px}
-.login-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface2);border-radius:var(--r-sm);padding:4px;margin-bottom:22px}
-.login-tab{padding:9px;text-align:center;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:600;color:var(--text2);border:none;background:transparent;transition:.15s}
-.login-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px #0004}
-.divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--text3);font-size:.78rem}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--bg)}
+body::before{content:'';position:fixed;top:-120px;left:-120px;width:500px;height:500px;background:radial-gradient(circle,#6366f118,transparent 70%);border-radius:50%;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;bottom:-80px;right:-80px;width:360px;height:360px;background:radial-gradient(circle,#10b98110,transparent 70%);border-radius:50%;pointer-events:none;z-index:0}
+.wrap{width:100%;max-width:400px;position:relative;z-index:1}
+.logo{text-align:center;margin-bottom:28px}
+.logo-text{font-size:2.2rem;font-weight:900;color:var(--primary);letter-spacing:-1px}
+.logo-text span{color:var(--text2);font-weight:400}
+.logo-sub{font-size:.82rem;color:var(--text3);margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+/* Tabs */
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface2);border-radius:var(--r-sm);padding:4px;margin-bottom:22px}
+.auth-tab{padding:9px;text-align:center;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text2);border:none;background:transparent;transition:.15s;width:100%}
+.auth-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px #0005}
+/* Input icon */
+.inp-wrap{position:relative}
+.inp-wrap input{padding-left:38px}
+.inp-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.95rem;pointer-events:none;color:var(--text3)}
+.inp-eye{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:.9rem;padding:4px}
+/* PW bar */
+.pw-bar{height:3px;border-radius:2px;margin-top:5px;background:var(--surface3);transition:.3s}
+.pw-bar.weak{background:var(--danger);width:30%}
+.pw-bar.ok{background:var(--warning);width:65%}
+.pw-bar.strong{background:var(--success);width:100%}
+.forgot{font-size:.75rem;color:var(--primary);cursor:pointer;display:block;text-align:right;margin-top:4px;text-decoration:none;background:none;border:none;padding:0}
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--text3);font-size:.75rem}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
-.show-pass{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.9rem;padding:0}
-.forgot-link{font-size:.78rem;color:var(--primary);cursor:pointer;text-decoration:none;display:block;text-align:right;margin-top:4px}
-.forgot-link:hover{text-decoration:underline}
-.footer-note{text-align:center;font-size:.73rem;color:var(--text3);margin-top:18px;line-height:1.5}
-/* Password strength */
-.pw-strength{height:3px;border-radius:2px;margin-top:6px;transition:.3s;background:var(--surface3)}
-.pw-strength.weak{background:var(--danger);width:33%}
-.pw-strength.medium{background:var(--warning);width:66%}
-.pw-strength.strong{background:var(--success);width:100%}
-/* ── Decorative BG ── */
-body::before{content:'';position:fixed;top:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,#6366f115,transparent 70%);border-radius:50%;pointer-events:none}
-body::after{content:'';position:fixed;bottom:-80px;right:-80px;width:300px;height:300px;background:radial-gradient(circle,#10b98110,transparent 70%);border-radius:50%;pointer-events:none}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;background:#fff;color:#1f2937;border:1px solid #d1d5db;border-radius:var(--r-sm);cursor:pointer;font-size:.88rem;font-weight:600;transition:.15s;min-height:44px}
+.btn-google:hover{background:#f9fafb}
+.footer-note{text-align:center;font-size:.72rem;color:var(--text3);margin-top:16px;line-height:1.5}
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
+<!-- Pantalla de carga -->
 <div id="loading-screen">
   <div class="loading-logo">Finance<span>OS</span></div>
   <div class="loading-bar"><div class="loading-bar-fill"></div></div>
-  <div class="fs-xs text-3">Verificando sesión...</div>
+  <div class="fs-xs text-3" id="loading-msg">Verificando sesión...</div>
 </div>
 
-<div class="login-wrap hidden" id="login-wrap">
+<!-- Login / Registro -->
+<div class="wrap hidden" id="auth-wrap">
 
-  <!-- LOGO -->
-  <div class="login-logo">
-    <div class="login-logo-text">Finance<span>OS</span></div>
-    <div class="login-logo-sub">Gestión financiera para agentes RE/MAX</div>
+  <div class="logo">
+    <div class="logo-text">Finance<span>OS</span></div>
+    <div class="logo-sub">Gestión financiera personal</div>
   </div>
 
-  <!-- CARD -->
-  <div class="login-card">
-
-    <!-- TABS -->
-    <div class="login-tabs">
-      <button class="login-tab active" id="tab-login" onclick="showTab('login')">Ingresar</button>
-      <button class="login-tab" id="tab-register" onclick="showTab('register')">Soy Broker</button>
+  <div class="card">
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-in"  onclick="switchTab('in')">Ingresar</button>
+      <button class="auth-tab"        id="tab-reg" onclick="switchTab('reg')">Registrarse</button>
     </div>
 
-    <!-- ALERT GLOBAL -->
+    <!-- Alertas -->
     <div id="auth-alert" class="hidden"></div>
 
-    <!-- ─── FORM LOGIN ─── -->
-    <form id="form-login" onsubmit="handleLogin(event)">
+    <!-- ─── LOGIN ─── -->
+    <form id="form-in" onsubmit="doLogin(event)">
       <div class="form-group">
         <label>Correo electrónico</label>
-        <div class="input-icon">
-          <span class="icon">✉️</span>
-          <input id="login-email" type="email" placeholder="tu@remax.com.ar" autocomplete="email" required>
+        <div class="inp-wrap">
+          <span class="inp-icon">✉️</span>
+          <input id="in-email" type="email" placeholder="tu@email.com" autocomplete="email" required>
         </div>
       </div>
       <div class="form-group">
         <label>Contraseña</label>
-        <div class="input-icon">
-          <span class="icon">🔒</span>
-          <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" required>
-          <button type="button" class="icon-right show-pass icon" onclick="togglePass('login-pass',this)" tabindex="-1">👁</button>
+        <div class="inp-wrap">
+          <span class="inp-icon">🔒</span>
+          <input id="in-pass" type="password" placeholder="••••••••" autocomplete="current-password" required>
+          <button type="button" class="inp-eye" onclick="toggleEye('in-pass',this)">👁</button>
         </div>
-        <a class="forgot-link" onclick="handleForgot()">¿Olvidaste tu contraseña?</a>
+        <button type="button" class="forgot" onclick="doForgot()">¿Olvidaste tu contraseña?</button>
       </div>
-      <button type="submit" class="btn btn-primary btn-block" id="btn-login">
-        Ingresar
-      </button>
-
-      <div class="divider">o continuá con</div>
-
-      <button type="button" class="btn btn-google btn-block" onclick="handleGoogle()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="Google">
-        Ingresar con Google
+      <button type="submit" class="btn btn-primary btn-block" id="btn-in">Ingresar</button>
+      <div class="divider">o</div>
+      <button type="button" class="btn-google" onclick="doGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="">
+        Continuar con Google
       </button>
     </form>
 
-    <!-- ─── FORM REGISTER BROKER ─── -->
-    <form id="form-register" class="hidden" onsubmit="handleRegister(event)">
-      <div class="alert alert-info mb-3">
-        👋 Este formulario es para <strong>Brokers</strong> que desean gestionar su equipo de agentes. Los agentes son invitados desde el panel del broker.
-      </div>
+    <!-- ─── REGISTRO ─── -->
+    <form id="form-reg" class="hidden" onsubmit="doRegister(event)">
       <div class="form-group">
         <label>Nombre completo</label>
-        <input id="reg-name" type="text" placeholder="Ej: Alejandro Vera" required>
+        <input id="reg-name" type="text" placeholder="Tu nombre" autocomplete="name" required>
       </div>
       <div class="form-group">
         <label>Correo electrónico</label>
-        <div class="input-icon">
-          <span class="icon">✉️</span>
-          <input id="reg-email" type="email" placeholder="broker@remax.com.ar" autocomplete="email" required>
+        <div class="inp-wrap">
+          <span class="inp-icon">✉️</span>
+          <input id="reg-email" type="email" placeholder="tu@email.com" autocomplete="email" required>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Oficina / Sucursal</label>
-        <input id="reg-office" type="text" placeholder="Ej: RE/MAX Norte - Buenos Aires" required>
       </div>
       <div class="form-group">
         <label>Contraseña</label>
-        <div class="input-icon">
-          <span class="icon">🔒</span>
-          <input id="reg-pass" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" oninput="checkPwStrength(this)" required>
-          <button type="button" class="icon-right show-pass icon" onclick="togglePass('reg-pass',this)" tabindex="-1">👁</button>
+        <div class="inp-wrap">
+          <span class="inp-icon">🔒</span>
+          <input id="reg-pass" type="password" placeholder="Mínimo 8 caracteres"
+            autocomplete="new-password" minlength="8" oninput="checkPw(this)" required>
+          <button type="button" class="inp-eye" onclick="toggleEye('reg-pass',this)">👁</button>
         </div>
-        <div class="pw-strength" id="pw-bar"></div>
+        <div class="pw-bar" id="pw-bar"></div>
       </div>
       <div class="form-group">
         <label>Confirmar contraseña</label>
-        <div class="input-icon">
-          <span class="icon">🔒</span>
+        <div class="inp-wrap">
+          <span class="inp-icon">🔒</span>
           <input id="reg-pass2" type="password" placeholder="Repetí tu contraseña" autocomplete="new-password" required>
+          <button type="button" class="inp-eye" onclick="toggleEye('reg-pass2',this)">👁</button>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary btn-block" id="btn-register">
-        Crear cuenta de Broker
+      <button type="submit" class="btn btn-primary btn-block" id="btn-reg">Crear cuenta</button>
+      <div class="divider">o</div>
+      <button type="button" class="btn-google" onclick="doGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="">
+        Continuar con Google
       </button>
     </form>
-
   </div>
 
   <div class="footer-note">
-    Al ingresar aceptás los términos de uso.<br>
-    FinanceOS · RE/MAX Argentina · 2026
+    Al continuar aceptás los términos de uso.<br>
+    FinanceOS · 2026
   </div>
-
 </div>
 
-<script type="module">
-// ── Manejo global de errores de módulo ───────────────
-// Captura errores de imports fallidos (ej: firebase-config.js 404)
-window.addEventListener('unhandledrejection', (e) => {
-  console.error('Module error:', e.reason);
-  showFirebaseError(e.reason?.message || String(e.reason));
-});
-
-function showFirebaseError(detail) {
+<script>
+// Captura errores de módulo antes de que cargue el JS
+window.addEventListener('unhandledrejection', e => showConfigError(e.reason?.message));
+function showConfigError(detail) {
   const ls = document.getElementById('loading-screen');
   if (!ls) return;
   ls.innerHTML = `
-    <div style="text-align:center;padding:24px;max-width:420px">
+    <div style="text-align:center;padding:24px;max-width:380px">
       <div style="font-size:2.5rem;margin-bottom:12px">⚙️</div>
-      <div style="font-size:1.1rem;font-weight:700;color:#f1f5f9;margin-bottom:8px">
-        FinanceOS no está configurado
+      <div style="font-weight:700;color:#f1f5f9;margin-bottom:8px">Firebase no configurado</div>
+      <div style="color:#94a3b8;font-size:.82rem;line-height:1.6;margin-bottom:16px">
+        Falta <code style="color:#f59e0b">js/firebase-config.js</code>.<br>
+        Creá el archivo con tu configuración de Firebase.
       </div>
-      <div style="color:#94a3b8;font-size:.85rem;line-height:1.6;margin-bottom:20px">
-        Falta el archivo <code style="color:#f59e0b">firebase-config.js</code>.<br>
-        Para activarlo en GitHub Pages:
-      </div>
-      <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px;text-align:left;font-size:.78rem;color:#94a3b8;line-height:1.8">
-        <strong style="color:#f1f5f9">1.</strong> Ir al repo en GitHub<br>
-        <strong style="color:#f1f5f9">2.</strong> Settings → Secrets → Actions<br>
-        <strong style="color:#f1f5f9">3.</strong> Crear secret: <code style="color:#f59e0b">FIREBASE_CONFIG_JSON</code><br>
-        <strong style="color:#f1f5f9">4.</strong> Settings → Pages → Source: <strong style="color:#6366f1">GitHub Actions</strong><br>
-        <strong style="color:#f1f5f9">5.</strong> Hacer un push para disparar el workflow
-      </div>
-      ${detail ? `<div style="margin-top:12px;font-size:.72rem;color:#475569">Detalle: ${detail}</div>` : ''}
+      ${detail?`<div style="font-size:.7rem;color:#475569;margin-top:8px">${detail}</div>`:''}
     </div>`;
 }
+</script>
 
-// ── Al cargar: verificar sesión activa ───────────────
-let loginWithEmail, loginWithGoogle, registerBroker, resetPassword, checkAuthAndRoute, routeByRole;
+<script type="module">
+let _auth, _routeByRole, _loginWithEmail, _loginWithGoogle, _registerUser, _resetPassword;
 
 try {
-  const auth = await import('./js/auth.js');
-  loginWithEmail   = auth.loginWithEmail;
-  loginWithGoogle  = auth.loginWithGoogle;
-  registerBroker   = auth.registerBroker;
-  resetPassword    = auth.resetPassword;
-  checkAuthAndRoute = auth.checkAuthAndRoute;
-  routeByRole      = auth.routeByRole;
+  const m = await import('./js/auth.js');
+  _auth           = m.auth;
+  _routeByRole    = m.routeByRole;
+  _loginWithEmail = m.loginWithEmail;
+  _loginWithGoogle= m.loginWithGoogle;
+  _registerUser   = m.registerUser;
+  _resetPassword  = m.resetPassword;
+  const { checkAuthAndRoute } = m;
+
+  const profile = await checkAuthAndRoute();
+  if (profile) {
+    _routeByRole(profile);
+  } else {
+    document.getElementById('loading-screen').classList.add('hidden');
+    document.getElementById('auth-wrap').classList.remove('hidden');
+  }
 } catch(err) {
-  showFirebaseError(err.message);
-  throw err; // detiene ejecución
+  showConfigError(err.message);
 }
 
-const profile = await checkAuthAndRoute();
-if (profile) {
-  routeByRole(profile);   // ya tiene sesión → redirige
-} else {
-  document.getElementById('loading-screen').classList.add('hidden');
-  document.getElementById('login-wrap').classList.remove('hidden');
-}
-
-// ── Tab switcher ─────────────────────────────────────
-window.showTab = (tab) => {
-  const isLogin = tab === 'login';
-  document.getElementById('form-login').classList.toggle('hidden', !isLogin);
-  document.getElementById('form-register').classList.toggle('hidden', isLogin);
-  document.getElementById('tab-login').classList.toggle('active', isLogin);
-  document.getElementById('tab-register').classList.toggle('active', !isLogin);
+// ── Tabs ──────────────────────────────────────────────
+window.switchTab = (tab) => {
+  const isIn = tab === 'in';
+  document.getElementById('form-in').classList.toggle('hidden', !isIn);
+  document.getElementById('form-reg').classList.toggle('hidden', isIn);
+  document.getElementById('tab-in').classList.toggle('active', isIn);
+  document.getElementById('tab-reg').classList.toggle('active', !isIn);
   clearAlert();
 };
 
 // ── Login ─────────────────────────────────────────────
-window.handleLogin = async (e) => {
+window.doLogin = async (e) => {
   e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-pass').value;
-  setLoading('btn-login', true);
+  setBusy('btn-in', true);
   try {
-    const profile = await loginWithEmail(email, pass);
-    routeByRole(profile);
-  } catch(err) {
-    showAlert(friendlyError(err.code), 'danger');
-    setLoading('btn-login', false);
-  }
+    const p = await _loginWithEmail(
+      document.getElementById('in-email').value.trim(),
+      document.getElementById('in-pass').value
+    );
+    _routeByRole(p);
+  } catch(err) { showAlert(friendlyErr(err.code)); setBusy('btn-in', false); }
 };
 
 // ── Google ────────────────────────────────────────────
-window.handleGoogle = async () => {
+window.doGoogle = async () => {
   try {
-    const profile = await loginWithGoogle();
-    routeByRole(profile);
+    const p = await _loginWithGoogle();
+    _routeByRole(p);
   } catch(err) {
-    if (err.code !== 'auth/popup-closed-by-user')
-      showAlert(friendlyError(err.code), 'danger');
+    if (err.code !== 'auth/popup-closed-by-user') showAlert(friendlyErr(err.code));
   }
 };
 
-// ── Registro broker ───────────────────────────────────
-window.handleRegister = async (e) => {
+// ── Registro ──────────────────────────────────────────
+window.doRegister = async (e) => {
   e.preventDefault();
-  const name   = document.getElementById('reg-name').value.trim();
-  const email  = document.getElementById('reg-email').value.trim();
-  const office = document.getElementById('reg-office').value.trim();
-  const pass   = document.getElementById('reg-pass').value;
-  const pass2  = document.getElementById('reg-pass2').value;
-  if (pass !== pass2) { showAlert('Las contraseñas no coinciden.', 'danger'); return; }
-  setLoading('btn-register', true);
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  if (pass !== pass2) { showAlert('Las contraseñas no coinciden.'); return; }
+  setBusy('btn-reg', true);
   try {
-    const profile = await registerBroker(name, email, pass, office);
-    routeByRole(profile);
-  } catch(err) {
-    showAlert(friendlyError(err.code), 'danger');
-    setLoading('btn-register', false);
-  }
+    const p = await _registerUser(name, email, pass);
+    _routeByRole(p);
+  } catch(err) { showAlert(friendlyErr(err.code)); setBusy('btn-reg', false); }
 };
 
-// ── Reset password ────────────────────────────────────
-window.handleForgot = async () => {
-  const email = document.getElementById('login-email').value.trim();
-  if (!email) { showAlert('Ingresá tu correo primero para recuperar la contraseña.', 'warning'); return; }
+// ── Olvidé contraseña ─────────────────────────────────
+window.doForgot = async () => {
+  const email = document.getElementById('in-email').value.trim();
+  if (!email) { showAlert('Ingresá tu correo primero.', 'warning'); return; }
   try {
-    await resetPassword(email);
-    showAlert('✅ Revisá tu correo para restablecer tu contraseña.', 'success');
-  } catch(err) {
-    showAlert(friendlyError(err.code), 'danger');
-  }
+    await _resetPassword(email);
+    showAlert('✅ Revisá tu correo para restablecer la contraseña.', 'success');
+  } catch(err) { showAlert(friendlyErr(err.code)); }
 };
 
 // ── UI helpers ────────────────────────────────────────
-window.togglePass = (id, btn) => {
-  const input = document.getElementById(id);
-  input.type = input.type === 'password' ? 'text' : 'password';
-  btn.textContent = input.type === 'password' ? '👁' : '🙈';
+window.toggleEye = (id, btn) => {
+  const i = document.getElementById(id);
+  i.type = i.type==='password'?'text':'password';
+  btn.textContent = i.type==='password'?'👁':'🙈';
 };
-
-window.checkPwStrength = (input) => {
-  const bar = document.getElementById('pw-bar');
-  const v   = input.value;
-  if (!v.length) { bar.className='pw-strength'; return; }
-  const strong = v.length>=8 && /[A-Z]/.test(v) && /[0-9]/.test(v) && /[^A-Za-z0-9]/.test(v);
-  const medium = v.length>=8 && (/[A-Z]/.test(v) || /[0-9]/.test(v));
-  bar.className = 'pw-strength ' + (strong?'strong':medium?'medium':'weak');
+window.checkPw = (inp) => {
+  const v=inp.value, bar=document.getElementById('pw-bar');
+  if(!v){bar.className='pw-bar';return;}
+  const strong=v.length>=8&&/[A-Z]/.test(v)&&/[0-9]/.test(v)&&/[^A-Za-z0-9]/.test(v);
+  const ok=v.length>=8&&(/[A-Z]/.test(v)||/[0-9]/.test(v));
+  bar.className='pw-bar '+(strong?'strong':ok?'ok':'weak');
 };
-
 function showAlert(msg, type='danger') {
-  const el = document.getElementById('auth-alert');
-  el.className = `alert alert-${type}`;
-  el.textContent = msg;
+  const el=document.getElementById('auth-alert');
+  el.className=`alert alert-${type}`;
+  el.innerHTML=msg;
   el.classList.remove('hidden');
 }
-function clearAlert() {
-  document.getElementById('auth-alert').classList.add('hidden');
+function clearAlert(){ document.getElementById('auth-alert').classList.add('hidden'); }
+function setBusy(id, busy) {
+  const b=document.getElementById(id);
+  b.disabled=busy;
+  if(!b._orig) b._orig=b.textContent;
+  b.innerHTML=busy?'<span class="spinner"></span> Procesando...':b._orig;
 }
-function setLoading(btnId, loading) {
-  const btn = document.getElementById(btnId);
-  btn.disabled = loading;
-  btn.innerHTML = loading ? '<span class="spinner"></span> Procesando...' : btn.dataset.originalText || btn.textContent;
-  if (!loading && !btn.dataset.originalText) btn.dataset.originalText = btn.textContent;
-}
-function friendlyError(code) {
-  const msgs = {
-    'auth/user-not-found':    'No existe una cuenta con ese correo.',
-    'auth/wrong-password':    'Contraseña incorrecta. Intentá de nuevo.',
-    'auth/invalid-credential':'Correo o contraseña incorrectos.',
-    'auth/email-already-in-use':'Ese correo ya tiene una cuenta.',
-    'auth/weak-password':     'La contraseña debe tener al menos 6 caracteres.',
-    'auth/invalid-email':     'El formato del correo no es válido.',
-    'auth/too-many-requests': 'Demasiados intentos. Esperá unos minutos.',
+function friendlyErr(code) {
+  return ({
+    'auth/user-not-found':       'No existe una cuenta con ese correo.',
+    'auth/wrong-password':       'Contraseña incorrecta.',
+    'auth/invalid-credential':   'Correo o contraseña incorrectos.',
+    'auth/email-already-in-use': 'Ese correo ya está registrado. <button class="btn btn-ghost btn-sm" onclick="switchTab(\'in\')">Ingresar</button>',
+    'auth/weak-password':        'La contraseña debe tener al menos 6 caracteres.',
+    'auth/invalid-email':        'El formato del correo no es válido.',
+    'auth/too-many-requests':    'Demasiados intentos. Esperá unos minutos.',
     'auth/network-request-failed':'Sin conexión. Verificá tu internet.',
-  };
-  return msgs[code] || `Error: ${code}`;
+  })[code] || `Error: ${code}`;
 }
 </script>
 </body>

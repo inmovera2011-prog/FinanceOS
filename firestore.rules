@@ -2,95 +2,72 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helpers basicos
-    function signedIn() {
-      return request.auth != null;
-    }
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
 
-    function uid() {
-      return request.auth.uid;
-    }
-
-    // Lee el rol del usuario autenticado desde /users/{uid}
     function userRole() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
-
-    function isBroker() {
-      return signedIn() && userRole() == 'broker';
-    }
-
-    function isAgent() {
-      return signedIn() && userRole() == 'agent';
-    }
-
-    // Verifica que el agente pertenece al broker autenticado
-    function agentOwnedByMe(agentId) {
-      return exists(/databases/$(database)/documents/agents/$(agentId))
-          && get(/databases/$(database)/documents/agents/$(agentId)).data.brokerId == uid();
-    }
+    function isAdmin() { return signedIn() && userRole() == 'admin'; }
+    function isUser()  { return signedIn() && userRole() == 'user';  }
 
     // /users/{userId}
     match /users/{userId} {
-      allow read:   if signedIn() && (uid() == userId || isBroker());
+      allow read:   if signedIn() && (uid() == userId || isAdmin());
       allow create: if signedIn() && uid() == userId;
-      allow update: if signedIn() && uid() == userId;
-      allow delete: if false;
+      allow update: if signedIn() && (uid() == userId || isAdmin());
+      allow delete: if isAdmin();
     }
 
-    // /brokers/{brokerId}
-    match /brokers/{brokerId} {
-      allow read, write: if signedIn() && uid() == brokerId;
+    // /admins/{adminId}
+    match /admins/{adminId} {
+      allow read, write: if signedIn() && uid() == adminId;
+      allow read: if isAdmin();
     }
 
-    // /agents/{agentId} - documento raiz del agente
-    match /agents/{agentId} {
-      // Agente lee su propio perfil; broker lee perfiles de sus agentes
-      allow read:   if signedIn() && (uid() == agentId || (isBroker() && agentOwnedByMe(agentId)));
-      // Solo el broker puede crear/actualizar el perfil del agente
-      allow create: if isBroker();
-      allow update: if signedIn() && (uid() == agentId || (isBroker() && agentOwnedByMe(agentId)));
-      allow delete: if isBroker() && agentOwnedByMe(agentId);
+    // /users_data/{userId} — perfil extendido
+    match /users_data/{userId} {
+      allow read, write: if signedIn() && uid() == userId;
+      allow read, write: if isAdmin();
     }
 
-    // /agents/{agentId}/accounts/{docId}
-    match /agents/{agentId}/accounts/{docId} {
-      allow read, write: if signedIn() && uid() == agentId;
-      allow read:        if isBroker() && agentOwnedByMe(agentId);
+    // /users_data/{userId}/accounts/{docId}
+    match /users_data/{userId}/accounts/{docId} {
+      allow read, write: if signedIn() && uid() == userId;
+      allow read:        if isAdmin();
     }
 
-    // /agents/{agentId}/transactions/{docId}
-    match /agents/{agentId}/transactions/{docId} {
-      allow read, write: if signedIn() && uid() == agentId;
-      allow read:        if isBroker() && agentOwnedByMe(agentId);
+    // /users_data/{userId}/transactions/{docId}
+    match /users_data/{userId}/transactions/{docId} {
+      allow read, write: if signedIn() && uid() == userId;
+      allow read:        if isAdmin();
     }
 
-    // /agents/{agentId}/goals/{docId}
-    match /agents/{agentId}/goals/{docId} {
-      allow read, write: if signedIn() && uid() == agentId;
-      allow read:        if isBroker() && agentOwnedByMe(agentId);
+    // /users_data/{userId}/goals/{docId}
+    match /users_data/{userId}/goals/{docId} {
+      allow read, write: if signedIn() && uid() == userId;
+      allow read:        if isAdmin();
     }
 
-    // /agents/{agentId}/cards/{docId}
-    match /agents/{agentId}/cards/{docId} {
-      allow read, write: if signedIn() && uid() == agentId;
-      allow read:        if isBroker() && agentOwnedByMe(agentId);
+    // /users_data/{userId}/cards/{docId}
+    match /users_data/{userId}/cards/{docId} {
+      allow read, write: if signedIn() && uid() == userId;
+      allow read:        if isAdmin();
     }
 
-    // /agents/{agentId}/settings/{docId}
-    // El broker puede escribir settings (habilidades)
-    match /agents/{agentId}/settings/{docId} {
-      allow read, write: if signedIn() && uid() == agentId;
-      allow read, write: if isBroker() && agentOwnedByMe(agentId);
+    // /users_data/{userId}/settings/{docId}
+    // Admin puede escribir settings (habilidades)
+    match /users_data/{userId}/settings/{docId} {
+      allow read, write: if signedIn() && uid() == userId;
+      allow read, write: if isAdmin();
     }
 
     // /invites/{token}
     match /invites/{token} {
       allow read:   if signedIn();
-      allow create: if isBroker();
+      allow create: if isAdmin();
       allow update: if signedIn();
-      allow delete: if isBroker();
+      allow delete: if isAdmin();
     }
-
   }
 }
