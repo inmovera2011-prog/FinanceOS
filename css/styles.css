@@ -19,7 +19,7 @@ html,body{min-height:100%;font-family:'Segoe UI',system-ui,-apple-system,sans-se
 .btn-success{background:var(--success);color:#fff}
 .btn-danger{background:var(--danger);color:#fff}
 .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--surface2);color:var(--text)}
-.btn-google{background:#fff;color:#1f2937;border:1px solid #d1d5db}.btn-google:hover{background:#f9fafb}
+.btn-google{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 20px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;min-height:44px;cursor:pointer;transition:.15s;background:#fff;color:#1f2937;border:1px solid #d1d5db;text-decoration:none}.btn-google:hover{background:#f9fafb}.btn-google:active{transform:scale(.97)}
 .btn-sm{padding:7px 14px;font-size:.82rem;min-height:36px}
 .btn-block{width:100%}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
