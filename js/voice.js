@@ -354,3 +354,155 @@ function esc(s) {
   if (!s) return "";
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
+
+// ═══════════════════════════════════════════════
+// VOICE WIZARD — Formularios paso a paso por voz
+// ═══════════════════════════════════════════════
+// steps: [{ prompt, field, type, hint?, options?:[{value,label,keywords}], required? }]
+// types: "text" | "amount" | "number" | "option"
+
+let _wiz = null;  // wizard state
+
+export function startVoiceWizard(steps, onComplete) {
+  if (!voiceSupported) { alert("Reconocimiento de voz no disponible. Usá Chrome."); return; }
+  _wiz = { steps, current: 0, data: {}, onComplete };
+  _wizShowStep();
+}
+
+function _wizShowStep() {
+  const { steps, current } = _wiz;
+  const step = steps[current];
+  const p = portal(); if (!p) return;
+  p.style.display = "flex";
+
+  const progress = `${current + 1} / ${steps.length}`;
+  const pct = Math.round((current / steps.length) * 100);
+
+  cardBody().innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:#64748b;margin-bottom:5px">
+        <span>Paso ${progress}</span>
+        <span>${step.required === false ? 'Opcional' : ''}</span>
+      </div>
+      <div style="height:4px;background:#334155;border-radius:2px">
+        <div style="width:${pct}%;height:100%;background:#14b8a6;border-radius:2px;transition:.3s"></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin:16px 0">
+      <div style="font-size:1.15rem;font-weight:700;color:#f1f5f9;margin-bottom:6px">${esc(step.prompt)}</div>
+      ${step.hint ? `<div style="font-size:.78rem;color:#64748b">Ej: "${esc(step.hint)}"</div>` : ''}
+      ${step.options ? `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px">${step.options.map(o=>`<span style="background:#334155;color:#94a3b8;border-radius:20px;padding:4px 10px;font-size:.75rem">${esc(o.label)}</span>`).join('')}</div>` : ''}
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;justify-content:center;height:36px;margin:10px 0" id="wiz-bars">
+      ${['.4s','.6s','.5s','.7s'].map(d=>`<div style="width:4px;height:20px;border-radius:2px;background:#14b8a6;animation:vjsBar .5s ease-in-out ${d} infinite alternate"></div>`).join('')}
+    </div>
+    <div id="vjs-interim" style="font-style:italic;font-size:.88rem;color:#94a3b8;text-align:center;min-height:22px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:8px">
+      ${step.required === false ? `<button onclick="window._wizSkip()" style="flex:1;padding:11px;border:none;border-radius:40px;background:#334155;color:#94a3b8;font-weight:600;cursor:pointer;font-size:.85rem">Saltar</button>` : ''}
+      <button onclick="window._wizCancel()" style="flex:1;padding:11px;border:none;border-radius:40px;background:#1e3a5f;color:#94a3b8;font-weight:600;cursor:pointer;font-size:.85rem">Cancelar</button>
+    </div>`;
+
+  document.getElementById("voice-portal-close").onclick = window._wizCancel;
+  _wizStartRec(step);
+}
+
+function _wizStartRec(step) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  if (_recognition && _listening) { try { _recognition.stop(); } catch {} }
+
+  const r = new SR();
+  _recognition = r; r.lang = "es"; r.interimResults = true; r.continuous = false;
+  let final = "", timer = setTimeout(() => { if (!final) _wizNoSpeech(); r.stop(); }, 9000);
+
+  r.onstart = () => { _listening = true; };
+  r.onresult = e => {
+    clearTimeout(timer);
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final = t; else interim += t;
+    }
+    const el = document.getElementById("vjs-interim");
+    if (el && !final) el.textContent = `"${interim}"`;
+    if (final) { _listening = false; _wizConfirm(step, final); r.stop(); }
+  };
+  r.onerror = e => { clearTimeout(timer); _listening = false; if (e.error !== "aborted") _wizNoSpeech(); };
+  r.onend = () => { clearTimeout(timer); _listening = false; };
+  try { r.start(); } catch(e) { _wizNoSpeech(); }
+}
+
+function _wizConfirm(step, transcript) {
+  const value = _wizParse(step, transcript);
+  const display = _wizDisplay(step, value);
+  cardBody().innerHTML = `
+    <div style="text-align:center;margin:8px 0 16px">
+      <div style="font-size:.8rem;color:#64748b;margin-bottom:6px">${esc(step.prompt)}</div>
+      <div style="font-size:1.1rem;font-style:italic;color:#94a3b8;margin-bottom:12px">"${esc(transcript)}"</div>
+      <div style="background:#0f172a;border-radius:12px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:.72rem;color:#64748b;margin-bottom:4px">Detecté:</div>
+        <div style="font-size:1.3rem;font-weight:800;color:#14b8a6">${esc(display)}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="window._wizRetry()" style="flex:1;padding:12px;border:none;border-radius:40px;background:#334155;color:#f1f5f9;font-weight:700;cursor:pointer">🔄 Repetir</button>
+      <button onclick="window._wizAccept()" style="flex:1;padding:12px;border:none;border-radius:40px;background:#14b8a6;color:#fff;font-weight:700;cursor:pointer">✅ Correcto</button>
+    </div>`;
+
+  window._wizPendingValue = value;
+  window._wizPendingStep  = step;
+}
+
+function _wizParse(step, text) {
+  const lower = text.toLowerCase().trim();
+  if (step.type === "amount") return wordsToNumber(text) || parseFloat(text.replace(/[^\d.,]/g,'').replace(',','.')) || 0;
+  if (step.type === "number") {
+    const n = wordsToNumber(text) || parseInt(text.match(/\d+/)?.[0]);
+    return isNaN(n) ? null : n;
+  }
+  if (step.type === "option" && step.options) {
+    const match = step.options.find(o => (o.keywords || [o.label.toLowerCase()]).some(k => lower.includes(k)));
+    return match ? match.value : step.options[0].value;
+  }
+  return text.trim();
+}
+
+function _wizDisplay(step, value) {
+  if (step.type === "amount") return "$ " + (value||0).toLocaleString("es-AR");
+  if (step.type === "option" && step.options) {
+    const opt = step.options.find(o => o.value === value);
+    return opt ? opt.label : value;
+  }
+  return value ?? "—";
+}
+
+function _wizNoSpeech() {
+  cardBody().innerHTML = `
+    <div style="text-align:center;padding:10px 0">
+      <div style="font-size:2rem;margin-bottom:8px">🎤</div>
+      <div style="font-size:.9rem;font-weight:600;margin-bottom:6px">No se detectó voz</div>
+      <div style="font-size:.8rem;color:#64748b;margin-bottom:14px">Hablá más cerca del micrófono</div>
+      <button onclick="window._wizRetry()" style="padding:10px 20px;background:#14b8a6;color:#fff;border:none;border-radius:40px;font-weight:700;cursor:pointer;margin-right:8px">🎤 Reintentar</button>
+      <button onclick="window._wizCancel()" style="padding:10px 16px;background:#334155;color:#f1f5f9;border:none;border-radius:40px;font-weight:600;cursor:pointer">Cancelar</button>
+    </div>`;
+}
+
+// Controles del wizard expuestos globalmente
+window._wizAccept = () => {
+  const { field } = window._wizPendingStep;
+  _wiz.data[field] = window._wizPendingValue;
+  _wiz.current++;
+  if (_wiz.current >= _wiz.steps.length) _wizFinish();
+  else _wizShowStep();
+};
+window._wizSkip   = () => { _wiz.current++; if (_wiz.current >= _wiz.steps.length) _wizFinish(); else _wizShowStep(); };
+window._wizRetry  = () => _wizShowStep();
+window._wizCancel = () => { _wiz = null; dismissVoiceCard(); };
+
+function _wizFinish() {
+  const data = _wiz.data;
+  const onComplete = _wiz.onComplete;
+  _wiz = null;
+  dismissVoiceCard();
+  onComplete(data);
+}

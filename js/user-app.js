@@ -2,6 +2,7 @@
 // USER-APP.JS — Dashboard del Usuario
 // ═══════════════════════════════════════════════
 import { auth, requireRole, logout }        from './auth.js';
+import { startVoiceWizard }                 from './voice.js';
 import { ViewingUser, uuid,
          getAccounts, saveAccount, deleteAccount,
          getTransactions, getMonthTransactions,
@@ -322,8 +323,27 @@ async function renderCuentas() {
   `);
 }
 
+window.voiceNewAccount = () => {
+  closeModal('modal-generic');
+  startVoiceWizard([
+    { prompt:'¿Cómo se llama la cuenta?', field:'name', type:'text', hint:'Banco Galicia' },
+    { prompt:'¿Qué tipo de cuenta?', field:'type', type:'option', hint:'banco',
+      options:[
+        {value:'banco',     label:'🏦 Banco',           keywords:['banco','caja','ahorro','cuenta']},
+        {value:'billetera', label:'💜 Billetera virtual',keywords:['billetera','virtual','mercado','uala','brubank']},
+        {value:'efectivo',  label:'💵 Efectivo',         keywords:['efectivo','cash','plata']},
+        {value:'inversion', label:'📈 Inversión',        keywords:['inversión','inversion','broker','cedear']},
+      ]},
+    { prompt:'¿Cuál es el saldo actual?', field:'balance', type:'amount', hint:'cien mil', required:false },
+  ], async (data) => {
+    await saveAccount({ name:data.name||'Cuenta', type:data.type||'banco', currency:'ARS', initialBalance:data.balance||0, createdAt:today() });
+    clearCache(); renderCuentas();
+  });
+};
+
 window.openNewAccount = () => {
   showGenericModal('Nueva Cuenta', `
+    <button class="btn btn-ghost btn-block mb-3" onclick="voiceNewAccount()" style="border:1px dashed #14b8a6;color:#14b8a6">🎤 Completar por voz</button>
     <form onsubmit="submitNewAccount(event)">
       <div class="form-group"><label>Nombre</label><input name="name" placeholder="Ej: Cuenta sueldo" required></div>
       <div class="form-group"><label>Tipo</label><select name="type">${ACCOUNT_TYPES.map(t=>`<option value="${t.id}">${t.icon} ${t.label}</option>`).join('')}</select></div>
@@ -430,6 +450,7 @@ async function renderObjetivos() {
 
 window.openEmFund = ()=>{
   showGenericModal('🛡️ Fondo de Emergencia',`
+    <button class="btn btn-ghost btn-block mb-3" onclick="voiceEmFund()" style="border:1px dashed #14b8a6;color:#14b8a6">🎤 Configurar por voz</button>`+`
     <form onsubmit="submitEmFund(event)">
       <div class="form-group"><label>Meses</label><select name="months">${[3,6,12].map(m=>`<option value="${m}" ${settings.emergencyMonths===m?'selected':''}>${m} meses</option>`).join('')}</select></div>
       <div class="form-group"><label>Gasto mensual promedio</label><div class="input-prefix"><span>$</span><input name="avg" type="number" step="0.01" inputmode="decimal"></div></div>
@@ -450,6 +471,7 @@ window.addToEmFund = async (id,current)=>{
 };
 window.openNewGoal = ()=>{
   showGenericModal('🎯 Nuevo objetivo',`
+    <button class="btn btn-ghost btn-block mb-3" onclick="voiceNewGoal()" style="border:1px dashed #14b8a6;color:#14b8a6">🎤 Completar por voz</button>`+`
     <form onsubmit="submitGoal(event)">
       <div class="form-group"><label>Nombre</label><input name="name" required></div>
       <div class="form-row">
@@ -590,7 +612,59 @@ function cardForm(c={}){return `<form onsubmit="submitCard(event,'${c.id||''}')"
     <button class="btn btn-primary btn-block mt-3" type="submit">Guardar</button>
   </form>`;}
 
-window.openNewCard=()=>{showGenericModal('💳 Nueva Tarjeta',cardForm());};
+window.voiceNewCard = () => {
+  closeModal('modal-generic');
+  startVoiceWizard([
+    { prompt:'¿Nombre de la tarjeta?', field:'name', type:'text', hint:'Visa Galicia' },
+    { prompt:'¿Cuál es el banco?', field:'bank', type:'text', hint:'Galicia' },
+    { prompt:'¿Cuál es el límite?', field:'limit', type:'amount', hint:'doscientos mil' },
+    { prompt:'¿Día de cierre?', field:'cutDate', type:'number', hint:'quince' },
+    { prompt:'¿Día de pago?', field:'payDate', type:'number', hint:'cinco' },
+    { prompt:'¿Tasa de interés anual (APR)?', field:'apr', type:'number', hint:'cuarenta y cinco', required:false },
+  ], async (data) => {
+    await saveCard({ name:data.name||'Tarjeta', bank:data.bank||'', limit:data.limit||0, balance:0, cutDate:data.cutDate||15, payDate:data.payDate||5, apr:data.apr||0, minPayment:0 });
+    renderCredito();
+  });
+};
+
+window.voiceNewGoal = () => {
+  closeModal('modal-generic');
+  startVoiceWizard([
+    { prompt:'¿Nombre del objetivo?', field:'name', type:'text', hint:'Vacaciones Europa' },
+    { prompt:'¿Cuánto necesitás ahorrar?', field:'target', type:'amount', hint:'un millón' },
+    { prompt:'¿Cuánto tenés ahorrado hasta ahora?', field:'current', type:'amount', hint:'cero', required:false },
+  ], async (data) => {
+    await saveGoal({ type:'custom', name:data.name||'Objetivo', targetAmount:data.target||0, currentAmount:data.current||0, createdAt:today() });
+    renderObjetivos();
+  });
+};
+
+window.voiceEmFund = () => {
+  closeModal('modal-generic');
+  startVoiceWizard([
+    { prompt:'¿Cuál es tu gasto mensual promedio?', field:'avg', type:'amount', hint:'doscientos mil' },
+    { prompt:'¿Cuántos meses de cobertura querés?', field:'months', type:'option', hint:'seis',
+      options:[
+        {value:3,  label:'3 meses — mínimo',   keywords:['tres','3','minimo']},
+        {value:6,  label:'6 meses — estándar',  keywords:['seis','6','estandar','normal']},
+        {value:12, label:'12 meses — máxima',   keywords:['doce','12','maximo','maxi']},
+      ]},
+    { prompt:'¿Cuánto tenés acumulado actualmente?', field:'current', type:'amount', hint:'cero', required:false },
+  ], async (data) => {
+    const months = data.months || 6;
+    const avg    = data.avg || 0;
+    settings.emergencyMonths = months;
+    await saveSettings(settings);
+    const goals = await getGoals();
+    const em = goals.find(g => g.type === 'emergency_fund');
+    await saveGoal({ id:em?.id, type:'emergency_fund', name:'Fondo de Emergencia', targetAmount:avg*months, currentAmount:data.current||0, months, createdAt:today() });
+    renderObjetivos();
+  });
+};
+
+window.openNewCard=()=>{showGenericModal('💳 Nueva Tarjeta', `
+  <button class="btn btn-ghost btn-block mb-3" onclick="voiceNewCard()" style="border:1px dashed #14b8a6;color:#14b8a6">🎤 Completar por voz</button>
+  ${cardForm()}`);};
 window.openEditCard=async(id)=>{const cards=await getCards();const c=cards.find(x=>x.id===id);if(!c)return;showGenericModal('✏️ Editar',cardForm(c));};
 window.submitCard=async(e,existingId)=>{e.preventDefault();const fd=new FormData(e.target);await saveCard({id:existingId||undefined,name:fd.get('name'),bank:fd.get('bank'),limit:parseFloat(fd.get('limit'))||0,balance:parseFloat(fd.get('balance'))||0,cutDate:parseInt(fd.get('cutDate')),payDate:parseInt(fd.get('payDate')),apr:parseFloat(fd.get('apr'))||0,minPayment:parseFloat(fd.get('minPayment'))||0});closeModal('modal-generic');renderCredito();};
 window.removeCard=async(id)=>{if(!confirm('¿Eliminar?'))return;await deleteCard(id);renderCredito();};
