@@ -72,15 +72,16 @@ export function parseVoiceInput(transcript) {
     type = "egreso"; typeExplicit = true;
   }
 
-  // Monto: primero busca número directo, luego palabras
+  // Monto: combina dígitos + palabras ("120 mil" = 120000)
   let amount = 0;
-  // Une dígitos separados por espacio: "120 000" → "120000"
   const normalized = transcript.replace(/(\d)\s+(?=\d)/g, "$1");
   const numMatch = normalized.match(/(\d[\d.,]*)/);
   if (numMatch) {
     amount = parseFloat(numMatch[0].replace(/\./g,"").replace(",",".")) || 0;
   }
-  if (!amount) amount = wordsToNumber(transcript) || 0;
+  // wordsToNumber suma "mil", "millón", etc. aunque haya dígitos
+  const wordAmount = wordsToNumber(transcript) || 0;
+  if (wordAmount > amount) amount = wordAmount;
 
   // Categoría
   if (!categoryId) {
