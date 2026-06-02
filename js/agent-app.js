@@ -71,7 +71,7 @@ async function init() {
   initVoice((parsed) => {
     // Al detectar voz: pre-cargar el form de transacción
     openNewTx(parsed.type === 'ahorro' ? 'egreso' : parsed.type, parsed);
-  });
+  }, DEFAULT_CATS);
 
   // Nav listeners
   document.querySelectorAll('[data-page]').forEach(el => {

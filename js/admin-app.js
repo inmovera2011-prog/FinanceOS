@@ -14,6 +14,8 @@ import { HABILIDADES, DEFAULT_HABS,
          DEFAULT_CATS, scoreColor,
          scoreLabel, scoreClass,
          fmt, fmtShort, monthKey, today }   from './constants.js';
+import { initVoice, toggleVoice,
+         dismissVoiceCard, getVoiceParsed } from './voice.js';
 
 let profile      = null;
 let users        = [];
@@ -34,6 +36,14 @@ async function init() {
   document.getElementById('admin-name-label').textContent = profile.name || 'Administrador';
   const av = document.getElementById('user-avatar');
   if (av) av.textContent = (profile.name || 'A')[0].toUpperCase();
+
+  // Inicializar voz
+  initVoice((parsed) => {
+    // Admin no tiene form de transacción — mostrar como notificación
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      new Notification('Voz detectada', { body: `${parsed.type}: $${parsed.amount} — ${parsed.description}` });
+    }
+  }, DEFAULT_CATS);
 
   document.querySelectorAll('[data-page]').forEach(el =>
     el.addEventListener('click', () => navigate(el.dataset.page))
@@ -554,9 +564,11 @@ function showGenericModal(title, body) {
   openModal('modal-generic');
 }
 
-window.openModal   = openModal;
-window.closeModal  = closeModal;
-window.navigate    = navigate;
+window.openModal        = openModal;
+window.closeModal       = closeModal;
+window.navigate         = navigate;
+window.toggleVoice      = toggleVoice;
+window.dismissVoiceCard = dismissVoiceCard;
 
 window.toggleSidebar = () => {
   document.getElementById('sidebar').classList.toggle('open');
