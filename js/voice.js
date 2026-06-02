@@ -193,21 +193,32 @@ function setFabState(active) {
 // ═══════════════════════════════════════════════
 function startRecognition() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return;
+  if (!SR) { showVoiceError("Reconocimiento de voz no soportado. Usá Chrome o Edge."); return; }
 
   const r = new SR();
   _recognition = r;
-  r.lang = "es-AR";
+  r.lang = "es";
   r.interimResults = true;
-  r.continuous = false;
+  r.continuous = true;
   r.maxAlternatives = 3;
 
   let finalText = "";
+  let silenceTimer = null;
+
+  function resetSilenceTimer() {
+    if (silenceTimer) clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(() => {
+      if (!finalText) {
+        showVoiceRetry("No se detectó voz. Hablá más cerca del micrófono.");
+        try { r.stop(); } catch {}
+      }
+    }, 7000);
+  }
 
   r.onstart = () => {
     _listening = true;
     setFabState(true);
-    // burbuja ya está abierta desde toggleVoice
+    resetSilenceTimer();
   };
 
   r.onresult = e => {
@@ -217,49 +228,64 @@ function startRecognition() {
       if (e.results[i].isFinal) finalText = t;
       else interim += t;
     }
-    // Actualizar texto parcial
+    resetSilenceTimer();
     const el = document.getElementById("vjs-interim");
     if (el && !finalText) el.textContent = `"${interim}"`;
-    // Si tenemos resultado final, mostrar resultado
     if (finalText) {
+      if (silenceTimer) clearTimeout(silenceTimer);
       _lastParsed = parseVoiceInput(finalText);
       showResult(_lastParsed);
+      try { r.stop(); } catch {}
     }
   };
 
   r.onerror = e => {
+    if (silenceTimer) clearTimeout(silenceTimer);
     if (e.error === "no-speech") {
-      dismissVoiceCard();
+      showVoiceRetry("No se detectó voz. Hablá más cerca del micrófono.");
     } else if (e.error === "not-allowed") {
       dismissVoiceCard();
       alert("Permiso de micrófono denegado. Habilitalo en la configuración del navegador.");
+    } else if (e.error === "aborted") {
+      // manual stop, ignore
     } else {
-      dismissVoiceCard();
+      showVoiceError(e.error || "Error de micrófono");
     }
   };
 
   r.onend = () => {
     _listening = false;
     setFabState(false);
+    if (silenceTimer) clearTimeout(silenceTimer);
     if (!finalText && portal()?.style.display !== "none") {
-      const card = cardBody();
-      if (card) card.innerHTML = `
-        <div style="text-align:center;padding:8px 0">
-          <div style="font-size:2rem;margin-bottom:8px">🎤</div>
-          <div style="font-size:.95rem;font-weight:600;margin-bottom:6px">No se detectó voz</div>
-          <div style="font-size:.82rem;color:#94a3b8;margin-bottom:16px">Hablá más cerca del micrófono e intentá de nuevo</div>
-          <button onclick="window.toggleVoice()" style="padding:10px 24px;background:#14b8a6;color:#fff;border:none;border-radius:40px;font-weight:700;cursor:pointer;font-size:.9rem">🎤 Intentar de nuevo</button>
-          <button onclick="window.dismissVoiceCard()" style="margin-left:10px;padding:10px 16px;background:#334155;color:#fff;border:none;border-radius:40px;font-weight:600;cursor:pointer;font-size:.9rem">Cancelar</button>
-        </div>`;
+      showVoiceRetry("No se detectó voz. Hablá más cerca del micrófono.");
     }
   };
 
   try {
     r.start();
   } catch(e) {
-    const card = document.getElementById("vjs-card");
-    if (card) card.innerHTML = `<div style="text-align:center;padding:12px"><div style="font-size:1.5rem;margin-bottom:8px">⚠️</div><div style="font-size:.9rem;color:#f87171">${e.message || "Error al iniciar el micrófono"}</div><button onclick="window.dismissVoiceCard()" style="margin-top:12px;padding:8px 20px;background:#334155;color:#fff;border:none;border-radius:20px;cursor:pointer">Cerrar</button></div>`;
+    showVoiceError(e.message || "Error al iniciar el micrófono");
   }
+}
+
+function showVoiceRetry(msg) {
+  const card = cardBody();
+  if (!card) return;
+  card.innerHTML = `
+    <div style="text-align:center;padding:8px 0">
+      <div style="font-size:2rem;margin-bottom:8px">🎤</div>
+      <div style="font-size:.95rem;font-weight:600;margin-bottom:6px">No se detectó voz</div>
+      <div style="font-size:.82rem;color:#94a3b8;margin-bottom:16px">${msg}</div>
+      <button onclick="window.toggleVoice()" style="padding:10px 24px;background:#14b8a6;color:#fff;border:none;border-radius:40px;font-weight:700;cursor:pointer;font-size:.9rem">🎤 Intentar de nuevo</button>
+      <button onclick="window.dismissVoiceCard()" style="margin-left:10px;padding:10px 16px;background:#334155;color:#fff;border:none;border-radius:40px;font-weight:600;cursor:pointer;font-size:.9rem">Cancelar</button>
+    </div>`;
+}
+
+function showVoiceError(msg) {
+  const card = cardBody() || document.getElementById("voice-card");
+  if (!card) return;
+  card.innerHTML = `<div style="text-align:center;padding:12px"><div style="font-size:1.5rem;margin-bottom:8px">⚠️</div><div style="font-size:.9rem;color:#f87171">${msg}</div><button onclick="window.dismissVoiceCard()" style="margin-top:12px;padding:8px 20px;background:#334155;color:#fff;border:none;border-radius:20px;cursor:pointer">Cerrar</button></div>`;
 }
 
 // ═══════════════════════════════════════════════
