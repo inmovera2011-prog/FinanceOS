@@ -21,8 +21,8 @@ service cloud.firestore {
 
     // /admins/{adminId}
     match /admins/{adminId} {
-      allow read, write: if signedIn() && uid() == adminId;
-      allow read: if isAdmin();
+      allow read:  if signedIn();          // cualquier usuario autenticado puede verificar si hay admins
+      allow write: if signedIn() && uid() == adminId;
     }
 
     // /users_data/{userId} — perfil extendido

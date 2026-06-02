@@ -130,10 +130,10 @@ export async function loginWithGoogle() {
 // El primer usuario registrado se convierte en admin automáticamente.
 // Los siguientes son 'user' por defecto.
 export async function registerUser(name, email, password) {
+  // Crear cuenta primero → ya hay sesión activa para las lecturas de Firestore
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
   const isFirstAdmin = !(await hasAnyAdmin());
   const role = isFirstAdmin ? 'admin' : 'user';
-
-  const cred = await createUserWithEmailAndPassword(auth, email, password);
   await createUserProfile(cred.user.uid, name, email, role);
   return loadProfile(cred.user.uid, email);
 }
