@@ -98,9 +98,21 @@ export async function checkAuthAndRoute() {
 // ── Protección de rutas ───────────────────────────
 export async function requireRole(expectedRole) {
   const profile = await checkAuthAndRoute();
-  if (!profile) { window.location.href = getBasePath(); return null; }
-  if (profile.role !== expectedRole) { routeByRole(profile); return null; }
+  if (!profile) {
+    if (window.__SPA__) return null;
+    window.location.href = getBasePath(); return null;
+  }
+  if (profile.role !== expectedRole) {
+    if (!window.__SPA__) routeByRole(profile);
+    return null;
+  }
   return profile;
+}
+
+// ── SPA: obtiene el path del módulo según el rol ──
+export function getRoleModulePath(role) {
+  const paths = { admin:'./js/admin-app.js', agent:'./js/agent-app.js', user:'./js/user-app.js' };
+  return paths[role] || null;
 }
 
 // ── Login email/password ──────────────────────────
