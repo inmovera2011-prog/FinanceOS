@@ -66,3 +66,27 @@ hr{border:none;border-top:1px solid var(--border);margin:18px 0}
 .loading-bar{width:120px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
 .loading-bar-fill{height:100%;background:var(--primary);border-radius:2px;animation:loadbar 1.5s ease-in-out infinite}
 @keyframes loadbar{0%{width:0;margin-left:0}50%{width:80%;margin-left:0}100%{width:0;margin-left:120px}}
+
+/* ── AUTH PAGE ── */
+#auth-wrap{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:900;overflow-y:auto;padding:20px}
+.auth-wrap{width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px;margin:auto}
+.logo{text-align:center;padding:12px 0}
+.logo-text{font-size:1.8rem;font-weight:900;color:var(--primary);letter-spacing:-1px}
+.logo-text span{color:var(--text2);font-weight:400}
+.logo-sub{font-size:.82rem;color:var(--text3);margin-top:4px}
+.footer-note{text-align:center;font-size:.72rem;color:var(--text3);padding:8px 0}
+.auth-tabs{display:flex;gap:4px;background:var(--surface2);border-radius:var(--r-sm);padding:3px;margin-bottom:16px}
+.auth-tab{flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:var(--text3);font-size:.85rem;font-weight:600;cursor:pointer;transition:.15s}
+.auth-tab.active{background:var(--primary);color:#fff}
+.inp-wrap{position:relative;display:flex;align-items:center}
+.inp-wrap input{padding-left:40px;padding-right:40px}
+.inp-icon{position:absolute;left:12px;font-size:1rem;z-index:1;pointer-events:none;line-height:1}
+.inp-eye{position:absolute;right:4px;background:none;border:none;font-size:1rem;cursor:pointer;padding:8px;color:var(--text3)}
+.forgot{display:block;margin-top:6px;font-size:.78rem;color:var(--primary);background:none;border:none;cursor:pointer;padding:0}
+.forgot:hover{text-decoration:underline}
+.divider{display:flex;align-items:center;gap:12px;margin:14px 0;color:var(--text3);font-size:.78rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.pw-bar{height:3px;border-radius:2px;margin-top:6px;overflow:hidden;background:var(--surface2);transition:.2s}
+.pw-bar.weak{background:var(--danger);width:33%}
+.pw-bar.ok{background:var(--warning);width:66%}
+.pw-bar.strong{background:var(--success);width:100%}
