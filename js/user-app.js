@@ -739,9 +739,11 @@ async function renderTxForm(prefill=null){
       ${isEg?`<div class="form-group"><label>¿Qué tipo de gasto?</label>
         <div class="psych-row">${[['necesidad','✅','Necesidad','Indispensable'],['gusto','👍','Gusto','Lo querés'],['capricho','⚠️','Capricho','Impulso']].map(([v,e,n,d])=>`<div class="psych-opt ${txState.psychFilter===v?'sel':''}" onclick="setPsych('${v}')"><span class="psych-emoji">${e}</span><div class="psych-name">${n}</div><div class="psych-sub">${d}</div></div>`).join('')}</div>
         ${txState.psychFilter==='capricho'?`<div class="alert alert-warning">⏰ <div><strong>¡Pausa!</strong><div class="flex gap-2 mt-2"><button type="button" class="btn btn-ghost btn-sm ${txState.cooldownHours===24?'btn-primary':''}" onclick="setCooldown(24)">24 hs</button><button type="button" class="btn btn-ghost btn-sm ${txState.cooldownHours===48?'btn-primary':''}" onclick="setCooldown(48)">48 hs</button><button type="button" class="btn btn-ghost btn-sm ${txState.cooldownHours===0?'btn-primary':''}" onclick="setCooldown(0)">Sin espera</button></div></div></div>`:''}`:''}
-      <button type="submit" class="btn btn-${txState.type==='ingreso'?'success':txState.type==='traslado'?'primary':'danger'} btn-block" style="min-height:50px;font-size:1rem;margin-top:4px">
-        ${txState.cooldownHours>0?`⏰ Guardar (esperar ${txState.cooldownHours}h)`:txState.type==='ingreso'?'💰 Registrar ingreso':txState.type==='traslado'?'🔄 Registrar transferencia':'📤 Registrar gasto'}
-      </button>
+      <div class="modal-submit">
+        <button type="submit" class="btn btn-${txState.type==='ingreso'?'success':txState.type==='traslado'?'primary':'danger'} btn-block" style="min-height:50px;font-size:1rem;border-radius:40px">
+          ${txState.cooldownHours>0?`⏰ Guardar (esperar ${txState.cooldownHours}h)`:txState.type==='ingreso'?'💰 Registrar ingreso':txState.type==='traslado'?'🔄 Registrar transferencia':'📤 Registrar gasto'}
+        </button>
+      </div>
     </form>`;
 }
 window.changeTxType=(t)=>{txState.type=t;txState.psychFilter=null;txState.cooldownHours=0;renderTxForm();document.getElementById('modal-tx-title').textContent={ingreso:'+ Ingreso',egreso:'- Gasto',traslado:'⇄ Transferencia'}[t];};
