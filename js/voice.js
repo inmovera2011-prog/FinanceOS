@@ -10,6 +10,13 @@ const TYPE_KEYWORDS = {
   ahorroEgreso: ["guardé","guarde","ahorré","ahorre"],
 };
 
+// Usa word boundary para keywords cortos ("gas" no matchea dentro de "gasto")
+function hasKeyword(text, kw) {
+  const words = kw.split(/\s+/);
+  if (words.length === 1) return new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`, 'i').test(text);
+  return text.toLowerCase().includes(kw);
+}
+
 const CATEGORY_KEYWORDS = {
   "gas-comida":    ["supermercado","verdulería","verduler","almacén","almacen","carnicería","comida","feria","mercado"],
   "gas-alquiler":  ["alquiler","hipoteca"],
@@ -23,6 +30,7 @@ const CATEGORY_KEYWORDS = {
   "gas-entret":    ["entretenimiento","cine","teatro","evento"],
   "gas-ropa":      ["ropa","zapatillas","calzado","indumentaria"],
   "gas-gym":       ["gym","gimnasio","deporte","fitness","yoga"],
+  "gas-educacion": ["colegio","educación","educacion","escuela","jardín","jardin","profesor","curso","universidad","facultad","cuota colegio","cuota escolar","particular"],
   "gas-suscr":     ["netflix","spotify","amazon","disney","suscripción","suscripcion","streaming"],
   "gas-viajes":    ["viaje","hotel","vuelo","airbnb","vacaciones"],
   "gas-cafe":      ["café","cafe","bar","medialunas","facturas","desayuno","confitería"],
@@ -62,13 +70,13 @@ export function parseVoiceInput(transcript) {
   let type = "egreso", categoryId = null;
   let typeExplicit = false;
 
-  if (TYPE_KEYWORDS.ahorroEgreso.some(k => lower.includes(k))) {
+  if (TYPE_KEYWORDS.ahorroEgreso.some(k => hasKeyword(lower, k))) {
     type = "egreso"; categoryId = "gas-ahorro"; typeExplicit = true;
-  } else if (TYPE_KEYWORDS.inversion.some(k => lower.includes(k))) {
+  } else if (TYPE_KEYWORDS.inversion.some(k => hasKeyword(lower, k))) {
     type = "egreso"; categoryId = "gas-inversion"; typeExplicit = true;
-  } else if (TYPE_KEYWORDS.ingreso.some(k => lower.includes(k))) {
+  } else if (TYPE_KEYWORDS.ingreso.some(k => hasKeyword(lower, k))) {
     type = "ingreso"; typeExplicit = true;
-  } else if (TYPE_KEYWORDS.egreso.some(k => lower.includes(k))) {
+  } else if (TYPE_KEYWORDS.egreso.some(k => hasKeyword(lower, k))) {
     type = "egreso"; typeExplicit = true;
   }
 
@@ -97,7 +105,7 @@ export function parseVoiceInput(transcript) {
   // Categoría
   if (!categoryId) {
     for (const [id, kws] of Object.entries(CATEGORY_KEYWORDS)) {
-      if (kws.some(k => lower.includes(k))) { categoryId = id; break; }
+      if (kws.some(k => hasKeyword(lower, k))) { categoryId = id; break; }
     }
   }
 
