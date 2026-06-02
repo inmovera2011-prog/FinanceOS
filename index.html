@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#0f172a">
 <title>FinanceOS</title>
 <link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 
 /* ═══════════════════════════════════════════════════
@@ -565,7 +566,7 @@ window.doLogin = async (e) => {
       document.getElementById('in-pass').value
     );
     await bootstrapApp(p);
-  } catch(err) { showAlertAuth(friendlyErrAuth(err.code)); setBusyAuth('btn-in', false); }
+  } catch(err) { showAlertAuth(friendlyErrAuth(err)); setBusyAuth('btn-in', false); }
 };
 
 window.doGoogle = async () => {
@@ -573,7 +574,7 @@ window.doGoogle = async () => {
     const p = await _loginWithGoogle();
     await bootstrapApp(p);
   } catch(err) {
-    if (err.code !== 'auth/popup-closed-by-user') showAlertAuth(friendlyErrAuth(err.code));
+    if (err.code !== 'auth/popup-closed-by-user') showAlertAuth(friendlyErrAuth(err));
   }
 };
 
@@ -588,7 +589,7 @@ window.doRegister = async (e) => {
   try {
     const p = await _registerUser(name, email, pass);
     await bootstrapApp(p);
-  } catch(err) { showAlertAuth(friendlyErrAuth(err.code)); setBusyAuth('btn-reg', false); }
+  } catch(err) { showAlertAuth(friendlyErrAuth(err)); setBusyAuth('btn-reg', false); }
 };
 
 window.doForgot = async () => {
@@ -597,7 +598,7 @@ window.doForgot = async () => {
   try {
     await _resetPassword(email);
     showAlertAuth('✅ Revisá tu correo para restablecer la contraseña.', 'success');
-  } catch(err) { showAlertAuth(friendlyErrAuth(err.code)); }
+  } catch(err) { showAlertAuth(friendlyErrAuth(err)); }
 };
 
 // ── UI helpers auth ──
@@ -626,7 +627,8 @@ function setBusyAuth(id, busy) {
   if(!b._orig) b._orig=b.textContent;
   b.innerHTML=busy?'<span class="spinner"></span> Procesando...':b._orig;
 }
-function friendlyErrAuth(code) {
+function friendlyErrAuth(err) {
+  const code = err?.code;
   return ({
     'auth/user-not-found':'No existe una cuenta con ese correo.',
     'auth/wrong-password':'Contraseña incorrecta.',
@@ -636,7 +638,7 @@ function friendlyErrAuth(code) {
     'auth/invalid-email':'El formato del correo no es válido.',
     'auth/too-many-requests':'Demasiados intentos. Esperá unos minutos.',
     'auth/network-request-failed':'Sin conexión. Verificá tu internet.',
-  })[code] || `Error: ${code}`;
+  })[code] || (code ? `Error: ${code}` : err?.message || 'Error inesperado');
 }
 </script>
 </body>
