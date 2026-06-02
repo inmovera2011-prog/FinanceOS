@@ -194,15 +194,16 @@ html,body{height:100%;overflow:hidden;display:flex;flex-direction:column}
 
 <script type="module">
 import { initVoice, toggleVoice, dismissVoiceCard } from './js/voice.js';
+import { DEFAULT_CATS } from './js/constants.js';
 window.toggleVoice = toggleVoice;
 window.dismissVoiceCard = dismissVoiceCard;
-initVoice(parsed => {
+initVoice(async parsed => {
   if (parsed.edit) {
     alert('✎ Editá manualmente: $' + parsed.amount + ' en ' + parsed.categoryId);
   } else if (parsed.amount) {
-    alert('✅ Registrado: $' + parsed.amount + ' (' + parsed.type + ')');
+    alert('✅ ' + parsed.type + ' por $' + parsed.amount + '\nCategoría: ' + parsed.categoryId);
   }
-}, []);
+}, DEFAULT_CATS);
 </script>
 </body>
 </html>
