@@ -90,3 +90,6 @@ hr{border:none;border-top:1px solid var(--border);margin:18px 0}
 .pw-bar.weak{background:var(--danger);width:33%}
 .pw-bar.ok{background:var(--warning);width:66%}
 .pw-bar.strong{background:var(--success);width:100%}
+
+/* ── PHOSPHOR ICONS ── */
+.ph{vertical-align:-.1em;line-height:1}

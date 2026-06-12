@@ -93,14 +93,14 @@ async function dashboard() {
 
   setContent(`
     <div class="grid-4 mb-3">
-      <div class="kpi blue"><div class="kpi-label">Total usuarios</div><div class="kpi-value">${users.length}</div><div class="kpi-icon">👥</div></div>
-      <div class="kpi green"><div class="kpi-label">Saludables</div><div class="kpi-value">${healthy}</div><div class="kpi-icon">💚</div></div>
-      <div class="kpi amber"><div class="kpi-label">Atención</div><div class="kpi-value">${warn}</div><div class="kpi-icon">⚠️</div></div>
-      <div class="kpi red"><div class="kpi-label">Críticos</div><div class="kpi-value">${crit}</div><div class="kpi-icon">🔴</div></div>
+      <div class="kpi blue"><div class="kpi-label">Total usuarios</div><div class="kpi-value">${users.length}</div><div class="kpi-icon"><i class="ph ph-users"></i></div></div>
+      <div class="kpi green"><div class="kpi-label">Saludables</div><div class="kpi-value">${healthy}</div><div class="kpi-icon"><i class="ph ph-heart"></i></div></div>
+      <div class="kpi amber"><div class="kpi-label">Atención</div><div class="kpi-value">${warn}</div><div class="kpi-icon"><i class="ph ph-warning-circle"></i></div></div>
+      <div class="kpi red"><div class="kpi-label">Críticos</div><div class="kpi-value">${crit}</div><div class="kpi-icon"><i class="ph ph-circle"></i></div></div>
     </div>
     ${!users.length ? `
       <div class="empty-state">
-        <div class="es-icon">👥</div>
+        <div class="es-icon"><i class="ph ph-users"></i></div>
         <div class="fw-bold mb-2">Sin usuarios registrados</div>
         <div class="fs-sm text-2 mb-3">Los usuarios se registran solos desde la pantalla de inicio.<br>Como administrador, podés gestionar sus habilidades aquí.</div>
       </div>` : `
@@ -115,7 +115,7 @@ async function dashboard() {
           const s = userScores[u.id] || 0;
           return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
             <div style="font-size:1.2rem;width:24px;text-align:center;color:${['#ffd700','#c0c0c0','#cd7f32'][i]}">
-              ${['🥇','🥈','🥉'][i]}
+              ${['<i class="ph ph-medal"></i>','<i class="ph ph-medal"></i>','<i class="ph ph-medal"></i>'][i]}
             </div>
             <div style="flex:1;min-width:0">
               <div class="fw-bold fs-sm">${u.name || u.email}</div>
@@ -165,7 +165,7 @@ function userRow(u) {
 // ═══════════════════════════════════════════════
 async function usuarios() {
   document.getElementById('topbar-action').innerHTML =
-    `<button class="btn btn-primary btn-sm" onclick="navigate('invitar')">+ Invitar</button>`;
+    `<button class="btn btn-primary btn-sm" onclick="navigate('invitar')"><i class="ph ph-plus-circle"></i> Invitar</button>`;
 
   setContent(`
     <div class="card">
@@ -176,7 +176,7 @@ async function usuarios() {
       </div>
       <div id="users-list">
         ${!users.length
-          ? `<div class="empty-state"><div class="es-icon">👥</div>Sin usuarios aún.</div>`
+          ? `<div class="empty-state"><div class="es-icon"><i class="ph ph-users"></i></div>Sin usuarios aún.</div>`
           : users.map(u => userCard(u)).join('')}
       </div>
     </div>
@@ -204,15 +204,15 @@ function userCard(u) {
         <div class="fs-xs text-2">${u.email || ''}</div>
       </div>
       <div class="flex gap-2" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openHabsEditor('${u.id}')" title="Habilidades">⚡</button>
-        <button class="btn btn-ghost btn-sm" onclick="openEditUser('${u.id}')" title="Editar">✏️</button>
-        <button class="btn btn-ghost btn-sm" onclick="confirmDeleteUser('${u.id}','${(u.name||u.email||'').replace(/'/g,'')}')" title="Eliminar">🗑</button>
+        <button class="btn btn-ghost btn-sm" onclick="openHabsEditor('${u.id}')" title="Habilidades"><i class="ph ph-lightning"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="openEditUser('${u.id}')" title="Editar"><i class="ph ph-pencil"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="confirmDeleteUser('${u.id}','${(u.name||u.email||'').replace(/'/g,'')}')" title="Eliminar"><i class="ph ph-trash"></i></button>
       </div>
     </div>
     <div class="progress-bar mb-2"><div class="progress-fill" style="width:${s}%;background:${scoreColor(s)}"></div></div>
     <div class="flex gap-3 fs-xs text-2">
       <span>${scoreLabel(s)}</span>
-      <span>⚡ ${habs}/${HABILIDADES.length} módulos</span>
+      <span><i class="ph ph-lightning"></i> ${habs}/${HABILIDADES.length} módulos</span>
     </div>
   </div>`;
 }
@@ -230,11 +230,11 @@ window.viewUserDetail = async (id) => {
   ]);
   ViewingUser.clear();
   const totals  = calcPeriodTotals(txs, DEFAULT_CATS);
-  const balance = accounts.reduce((sum, a) => sum + calcAccountBalance(a, txs), 0);
+  const balance = accounts.reduce((sum, a) => sum <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txs), 0);
   const emGoal  = goals.find(g => g.type === 'emergency_fund');
   const emPct   = emGoal ? Math.min(100, emGoal.currentAmount / emGoal.targetAmount * 100) : 0;
 
-  showGenericModal(`👤 ${u.name || u.email}`, `
+  showGenericModal(`<i class="ph ph-user"></i> ${u.name || u.email}`, `
     <div style="background:${scoreColor(s)}18;border:1px solid ${scoreColor(s)}40;border-radius:var(--r-sm);padding:14px;margin-bottom:16px">
       <div class="flex items-center gap-3">
         <div style="font-size:2.2rem;font-weight:900;color:${scoreColor(s)}">${s}</div>
@@ -246,10 +246,10 @@ window.viewUserDetail = async (id) => {
       <div class="kpi green" style="padding:12px"><div class="kpi-label">Ingresos mes</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totals.ingresos)}</div></div>
       <div class="kpi red" style="padding:12px"><div class="kpi-label">Gastos mes</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totals.egresos)}</div></div>
       <div class="kpi blue" style="padding:12px"><div class="kpi-label">Patrimonio</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(balance)}</div></div>
-      <div class="kpi ${totals.neto>=0?'purple':'amber'}" style="padding:12px"><div class="kpi-label">Neto mes</div><div class="kpi-value" style="font-size:1.1rem">${totals.neto>=0?'+':''}${fmtShort(totals.neto)}</div></div>
+      <div class="kpi ${totals.neto>=0?'purple':'amber'}" style="padding:12px"><div class="kpi-label">Neto mes</div><div class="kpi-value" style="font-size:1.1rem">${totals.neto>=0?'<i class="ph ph-plus-circle"></i>':''}${fmtShort(totals.neto)}</div></div>
     </div>
     ${emGoal ? `<div class="card mb-3" style="padding:12px">
-      <div class="card-title">🛡️ Fondo de Emergencia</div>
+      <div class="card-title"><i class="ph ph-shield-check"></i> Fondo de Emergencia</div>
       <div class="flex justify-between fs-sm mb-1"><span>${fmt(emGoal.currentAmount)}</span><span class="text-2">${fmt(emGoal.targetAmount)}</span></div>
       <div class="progress-bar"><div class="progress-fill" style="width:${emPct}%;background:${emPct>=100?'var(--success)':'var(--warning)'}"></div></div>
       <div class="fs-xs text-2 mt-1">${emPct.toFixed(1)}% completado</div>
@@ -261,22 +261,22 @@ window.viewUserDetail = async (id) => {
       </div>
     </div>
     <div class="flex gap-2">
-      <button class="btn btn-primary btn-sm" onclick="closeModal('modal-generic');openHabsEditor('${id}')">⚡ Habilidades</button>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-generic');openEditUser('${id}')">✏️ Editar</button>
-      <button class="btn btn-danger btn-sm" onclick="closeModal('modal-generic');confirmDeleteUser('${id}','${(u.name||'').replace(/'/g,'')}')">🗑</button>
+      <button class="btn btn-primary btn-sm" onclick="closeModal('modal-generic');openHabsEditor('${id}')"><i class="ph ph-lightning"></i> Habilidades</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-generic');openEditUser('${id}')"><i class="ph ph-pencil"></i> Editar</button>
+      <button class="btn btn-danger btn-sm" onclick="closeModal('modal-generic');confirmDeleteUser('${id}','${(u.name||'').replace(/'/g,'')}')"><i class="ph ph-trash"></i></button>
     </div>
   `);
 };
 
 window.openEditUser = (id) => {
   const u = users.find(x => x.id === id); if (!u) return;
-  showGenericModal('✏️ Editar Usuario', `
+  showGenericModal('<i class="ph ph-pencil"></i> Editar Usuario', `
     <form onsubmit="submitEditUser(event,'${id}')">
       <div class="form-group"><label>Nombre</label><input name="name" value="${u.name||''}" required></div>
       <div class="form-group"><label>Email</label><input value="${u.email||''}" disabled style="opacity:.6"></div>
       <div class="form-group"><label>Estado</label>
         <select name="status">
-          <option value="activo" ${u.status==='activo'?'selected':''}>✅ Activo</option>
+          <option value="activo" ${u.status==='activo'?'selected':''}><i class="ph ph-check-circle"></i> Activo</option>
           <option value="inactivo" ${u.status==='inactivo'?'selected':''}>⏸️ Inactivo</option>
         </select>
       </div>
@@ -317,15 +317,15 @@ async function invitar() {
       </div>
       <div style="background:var(--surface2);border-radius:var(--r-sm);padding:14px;word-break:break-all;font-size:.78rem;font-family:monospace;margin-bottom:12px" id="reg-link">${window.location.origin}${getBase()}</div>
       <div class="flex gap-2">
-        <button class="btn btn-primary" onclick="copyRegLink()">📋 Copiar link</button>
-        <a href="https://wa.me/?text=${encodeURIComponent('Unite a FinanceOS: ' + window.location.origin + getBase())}" target="_blank" class="btn btn-ghost">💬 WhatsApp</a>
+        <button class="btn btn-primary" onclick="copyRegLink()"><i class="ph ph-clipboard-text"></i> Copiar link</button>
+        <a href="https://wa.me/?text=${encodeURIComponent('Unite a FinanceOS: ' <i class="ph ph-plus-circle"></i> window.location.origin <i class="ph ph-plus-circle"></i> getBase())}" target="_blank" class="btn btn-ghost"><i class="ph ph-chat-text"></i> WhatsApp</a>
       </div>
       <hr>
       <div class="card-title mb-3">Gestionar habilidades a usuarios existentes</div>
       ${users.length ? users.map(u => `
         <div class="flex items-center justify-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
           <span class="fs-sm">${u.name || u.email}</span>
-          <button class="btn btn-ghost btn-sm" onclick="openHabsEditor('${u.id}')">⚡ Habilidades</button>
+          <button class="btn btn-ghost btn-sm" onclick="openHabsEditor('${u.id}')"><i class="ph ph-lightning"></i> Habilidades</button>
         </div>`).join('') : '<div class="text-2 fs-sm">Sin usuarios aún.</div>'}
     </div>
   `);
@@ -337,8 +337,8 @@ function getBase() {
 }
 
 window.copyRegLink = () => {
-  navigator.clipboard.writeText(window.location.origin + getBase())
-    .then(() => { const el=document.querySelector('[onclick="copyRegLink()"]'); if(el){el.textContent='✓ Copiado!';setTimeout(()=>el.textContent='📋 Copiar link',2000);} });
+  navigator.clipboard.writeText(window.location.origin <i class="ph ph-plus-circle"></i> getBase())
+    .then(() => { const el=document.querySelector('[onclick="copyRegLink()"]'); if(el){el.textContent='✓ Copiado!';setTimeout(()=>el.textContent='<i class="ph ph-clipboard-text"></i> Copiar link',2000);} });
 };
 
 // ═══════════════════════════════════════════════
@@ -346,7 +346,7 @@ window.copyRegLink = () => {
 // ═══════════════════════════════════════════════
 async function habilidades() {
   if (!users.length) {
-    setContent(`<div class="empty-state"><div class="es-icon">⚡</div>Sin usuarios para gestionar.</div>`);
+    setContent(`<div class="empty-state"><div class="es-icon"><i class="ph ph-lightning"></i></div>Sin usuarios para gestionar.</div>`);
     return;
   }
   const firstId = users[0].id;
@@ -396,7 +396,7 @@ window.renderHabsFor = async (userId) => {
         <div style="flex:1;padding-right:12px">
           <div class="fs-sm fw-bold">${h.icon} ${h.name}</div>
           <div class="fs-xs text-2">${h.desc}</div>
-          ${belowMin ? `<div class="fs-xs" style="color:var(--warning);margin-top:2px">⚠️ Score recomendado: ${h.minScore} (actual: ${score})</div>` : ''}
+          ${belowMin ? `<div class="fs-xs" style="color:var(--warning);margin-top:2px"><i class="ph ph-warning-circle"></i> Score recomendado: ${h.minScore} (actual: ${score})</div>` : ''}
         </div>
         <label class="toggle">
           <input type="checkbox" ${enabled?'checked':''} onchange="toggleHab('${userId}','${h.id}',this.checked)">
@@ -405,9 +405,9 @@ window.renderHabsFor = async (userId) => {
       </div>`;
     }).join('')}
     <div class="flex gap-2 mt-3">
-      <button class="btn btn-success btn-sm" onclick="enableAll('${userId}')">✅ Todo</button>
-      <button class="btn btn-ghost btn-sm" onclick="autoAssign('${userId}',${score})">🤖 Auto</button>
-      <button class="btn btn-ghost btn-sm" onclick="promoteUser('${userId}')">👑 Hacer admin</button>
+      <button class="btn btn-success btn-sm" onclick="enableAll('${userId}')"><i class="ph ph-check-circle"></i> Todo</button>
+      <button class="btn btn-ghost btn-sm" onclick="autoAssign('${userId}',${score})"><i class="ph ph-robot"></i> Auto</button>
+      <button class="btn btn-ghost btn-sm" onclick="promoteUser('${userId}')"><i class="ph ph-crown"></i> Hacer admin</button>
     </div>`;
 };
 
@@ -428,7 +428,7 @@ window.promoteUser = async (uid) => {
   const u = users.find(x => x.id === uid);
   if (!confirm(`¿Promover a ${u?.name || u?.email} como administrador?`)) return;
   await promoteToAdmin(uid);
-  alert('✅ Usuario promovido a administrador.');
+  alert('<i class="ph ph-check-circle"></i> Usuario promovido a administrador.');
 };
 
 // ═══════════════════════════════════════════════
@@ -436,7 +436,7 @@ window.promoteUser = async (uid) => {
 // ═══════════════════════════════════════════════
 async function reportes() {
   if (!users.length) {
-    setContent(`<div class="empty-state"><div class="es-icon">📊</div>Sin usuarios para reportar.</div>`);
+    setContent(`<div class="empty-state"><div class="es-icon"><i class="ph ph-chart-bar"></i></div>Sin usuarios para reportar.</div>`);
     return;
   }
   setContent(`<div style="text-align:center;padding:40px;color:var(--text2)"><div class="spinner" style="width:32px;height:32px;margin:0 auto 12px"></div>Cargando datos...</div>`);
@@ -450,18 +450,18 @@ async function reportes() {
         getAccounts().catch(() => []),
       ]);
       const totals  = calcPeriodTotals(txs, DEFAULT_CATS);
-      const balance = accounts.reduce((s, a) => s + calcAccountBalance(a, txs), 0);
+      const balance = accounts.reduce((s, a) => s <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txs), 0);
       return { ...u, totals, balance, txCount: txs.length };
     } catch { return { ...u, totals:{ingresos:0,egresos:0,ahorros:0,neto:0}, balance:0, txCount:0 }; }
     finally { ViewingUser.clear(); }
   }));
 
-  const totIng  = userData.reduce((s,u)=>s+u.totals.ingresos,0);
-  const totEg   = userData.reduce((s,u)=>s+u.totals.egresos,0);
-  const totSav  = userData.reduce((s,u)=>s+u.totals.ahorros,0);
-  const totBal  = userData.reduce((s,u)=>s+u.balance,0);
-  const avgScore= users.length ? Math.round(Object.values(userScores).reduce((s,v)=>s+v,0)/users.length) : 0;
-  const totTx   = userData.reduce((s,u)=>s+u.txCount,0);
+  const totIng  = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.totals.ingresos,0);
+  const totEg   = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.totals.egresos,0);
+  const totSav  = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.totals.ahorros,0);
+  const totBal  = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.balance,0);
+  const avgScore= users.length ? Math.round(Object.values(userScores).reduce((s,v)=>s<i class="ph ph-plus-circle"></i>v,0)/users.length) : 0;
+  const totTx   = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.txCount,0);
 
   setContent(`
     <div class="grid-3 mb-3">
@@ -489,7 +489,7 @@ async function reportes() {
                 <td><span style="font-weight:900;color:${scoreColor(s)}">${s}</span></td>
                 <td class="text-success">${fmtShort(u.totals.ingresos)}</td>
                 <td class="text-danger">${fmtShort(u.totals.egresos)}</td>
-                <td style="color:${u.totals.neto>=0?'var(--success)':'var(--danger)'}">${u.totals.neto>=0?'+':''}${fmtShort(u.totals.neto)}</td>
+                <td style="color:${u.totals.neto>=0?'var(--success)':'var(--danger)'}">${u.totals.neto>=0?'<i class="ph ph-plus-circle"></i>':''}${fmtShort(u.totals.neto)}</td>
                 <td>${u.txCount}</td>
               </tr>`;
             }).join('')}
@@ -505,7 +505,7 @@ async function reportes() {
     if (ctx1) activeCharts.scores = new Chart(ctx1, {
       type:'bar', data:{ labels:sorted.map(u=>(u.name||u.email||'').split(' ')[0]),
         datasets:[{data:sorted.map(u=>userScores[u.id]||0),
-          backgroundColor:sorted.map(u=>scoreColor(userScores[u.id]||0)+'99'),
+          backgroundColor:sorted.map(u=>scoreColor(userScores[u.id]||0)<i class="ph ph-plus-circle"></i>'99'),
           borderColor:sorted.map(u=>scoreColor(userScores[u.id]||0)),
           borderWidth:2,borderRadius:6,borderSkipped:false}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
@@ -538,7 +538,7 @@ async function configuracion() {
       </form>
     </div>
     <div class="card" style="max-width:480px;margin:12px auto 0">
-      <button class="btn btn-danger btn-block" onclick="handleLogout()">🚪 Cerrar sesión</button>
+      <button class="btn btn-danger btn-block" onclick="handleLogout()"><i class="ph ph-sign-out"></i> Cerrar sesión</button>
     </div>`);
 }
 
@@ -549,7 +549,7 @@ window.saveAdminConfig = async (e) => {
   document.getElementById('admin-name-label').textContent = name || 'Administrador';
   const av = document.getElementById('user-avatar');
   if (av) av.textContent = name[0]?.toUpperCase() || 'A';
-  alert('✅ Perfil actualizado');
+  alert('<i class="ph ph-check-circle"></i> Perfil actualizado');
 };
 
 // ═══════════════════════════════════════════════
@@ -583,7 +583,7 @@ window.handleLogout = async () => { await logout(); };
 init().catch(err => {
   document.getElementById('loading-screen').innerHTML = `
     <div style="text-align:center;padding:24px;color:#f1f5f9">
-      <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
+      <div style="font-size:2rem;margin-bottom:12px"><i class="ph ph-warning-circle"></i></div>
       <div style="font-weight:700;margin-bottom:8px">Error al cargar</div>
       <div style="font-size:.82rem;color:#94a3b8;margin-bottom:16px">${err.message}</div>
       <button onclick="location.reload()" style="padding:10px 20px;background:#6366f1;color:#fff;border:none;border-radius:8px;cursor:pointer">Reintentar</button>

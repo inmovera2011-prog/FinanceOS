@@ -93,10 +93,10 @@ async function dashboard() {
 
   setContent(`
     <div class="grid-4 mb-3">
-      <div class="kpi blue"><div class="kpi-label">Total agentes</div><div class="kpi-value">${agents.length}</div><div class="kpi-icon">👥</div></div>
-      <div class="kpi green"><div class="kpi-label">Saludables</div><div class="kpi-value">${healthy}</div><div class="kpi-icon">💚</div></div>
-      <div class="kpi amber"><div class="kpi-label">Atención</div><div class="kpi-value">${warn}</div><div class="kpi-icon">⚠️</div></div>
-      <div class="kpi red"><div class="kpi-label">Críticos</div><div class="kpi-value">${crit}</div><div class="kpi-icon">🔴</div></div>
+      <div class="kpi blue"><div class="kpi-label">Total agentes</div><div class="kpi-value">${agents.length}</div><div class="kpi-icon"><i class="ph ph-users"></i></div></div>
+      <div class="kpi green"><div class="kpi-label">Saludables</div><div class="kpi-value">${healthy}</div><div class="kpi-icon"><i class="ph ph-heart"></i></div></div>
+      <div class="kpi amber"><div class="kpi-label">Atención</div><div class="kpi-value">${warn}</div><div class="kpi-icon"><i class="ph ph-warning-circle"></i></div></div>
+      <div class="kpi red"><div class="kpi-label">Críticos</div><div class="kpi-value">${crit}</div><div class="kpi-icon"><i class="ph ph-circle"></i></div></div>
     </div>
 
     ${!agents.length ? emptyAgents() : `
@@ -111,7 +111,7 @@ async function dashboard() {
           const s = agentScores[ag.id]||0;
           return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
             <div style="font-size:1.2rem;width:24px;text-align:center;color:${['#ffd700','#c0c0c0','#cd7f32'][i]}">
-              ${['🥇','🥈','🥉'][i]}
+              ${['<i class="ph ph-medal"></i>','<i class="ph ph-medal"></i>','<i class="ph ph-medal"></i>'][i]}
             </div>
             <div style="flex:1;min-width:0">
               <div class="fw-bold fs-sm">${ag.name}</div>
@@ -139,7 +139,7 @@ async function dashboard() {
 
 function emptyAgents() {
   return `<div class="empty-state">
-    <div class="es-icon">👥</div>
+    <div class="es-icon"><i class="ph ph-users"></i></div>
     <div class="fw-bold mb-2">Sin agentes aún</div>
     <div class="fs-sm text-2 mb-3">Invitá tu primer agente para comenzar el seguimiento.</div>
     <button class="btn btn-primary" onclick="navigate('invitar')">Invitar primer agente →</button>
@@ -170,7 +170,7 @@ function renderHealthChart(h, w, c) {
 // ═══════════════════════════════════════════════
 async function agentes() {
   document.getElementById('topbar-action').innerHTML =
-    `<button class="btn btn-primary btn-sm" onclick="navigate('invitar')">+ Invitar</button>`;
+    `<button class="btn btn-primary btn-sm" onclick="navigate('invitar')"><i class="ph ph-plus-circle"></i> Invitar</button>`;
 
   setContent(`
     <div class="card">
@@ -181,7 +181,7 @@ async function agentes() {
       </div>
       <div id="agents-list">
         ${!agents.length
-          ? `<div class="empty-state"><div class="es-icon">👥</div>Sin agentes.<br><button class="btn btn-primary mt-3" onclick="navigate('invitar')">Invitar</button></div>`
+          ? `<div class="empty-state"><div class="es-icon"><i class="ph ph-users"></i></div>Sin agentes.<br><button class="btn btn-primary mt-3" onclick="navigate('invitar')">Invitar</button></div>`
           : agents.map(ag => agentCard(ag)).join('')}
       </div>
     </div>
@@ -220,16 +220,16 @@ function agentCard(ag) {
         <div class="fs-xs text-2">${ag.email||''} · ${ag.office||'Sin oficina'}</div>
       </div>
       <div class="flex gap-2" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openHabsEditor('${ag.id}')" title="Habilidades">⚡</button>
-        <button class="btn btn-ghost btn-sm" onclick="openEditAgent('${ag.id}')" title="Editar">✏️</button>
-        <button class="btn btn-ghost btn-sm" onclick="confirmDelete('${ag.id}','${ag.name.replace(/'/g,'')}')" title="Eliminar">🗑</button>
+        <button class="btn btn-ghost btn-sm" onclick="openHabsEditor('${ag.id}')" title="Habilidades"><i class="ph ph-lightning"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="openEditAgent('${ag.id}')" title="Editar"><i class="ph ph-pencil"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="confirmDelete('${ag.id}','${ag.name.replace(/'/g,'')}')" title="Eliminar"><i class="ph ph-trash"></i></button>
       </div>
     </div>
     <div class="progress-bar mb-2"><div class="progress-fill" style="width:${s}%;background:${scoreColor(s)}"></div></div>
     <div class="flex gap-3 fs-xs text-2">
       <span>${scoreLabel(s)}</span>
-      <span>⚡ ${habs}/${HABILIDADES.length} módulos</span>
-      <span>📅 ${ag.joinDate||'—'}</span>
+      <span><i class="ph ph-lightning"></i> ${habs}/${HABILIDADES.length} módulos</span>
+      <span><i class="ph ph-calendar"></i> ${ag.joinDate||'—'}</span>
     </div>
   </div>`;
 }
@@ -252,11 +252,11 @@ window.viewAgentDetail = async (id) => {
   ViewingAgent.clear();
 
   const totals = calcPeriodTotals(txs, DEFAULT_CATS);
-  const totalBal = accounts.reduce((sum, a) => sum + calcAccountBalance(a, txs), 0);
+  const totalBal = accounts.reduce((sum, a) => sum <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txs), 0);
   const emGoal = goals.find(g => g.type === 'emergency_fund');
   const emPct  = emGoal ? Math.min(100, (emGoal.currentAmount / emGoal.targetAmount) * 100) : 0;
 
-  showGenericModal(`👤 ${ag.name}`, `
+  showGenericModal(`<i class="ph ph-user"></i> ${ag.name}`, `
     <div style="background:${scoreColor(s)}18;border:1px solid ${scoreColor(s)}40;border-radius:var(--r-sm);padding:14px;margin-bottom:16px">
       <div class="flex items-center gap-3">
         <div style="font-size:2.2rem;font-weight:900;color:${scoreColor(s)}">${s}</div>
@@ -272,12 +272,12 @@ window.viewAgentDetail = async (id) => {
       <div class="kpi green" style="padding:12px"><div class="kpi-label">Ingresos mes</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totals.ingresos)}</div></div>
       <div class="kpi red" style="padding:12px"><div class="kpi-label">Gastos mes</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totals.egresos)}</div></div>
       <div class="kpi blue" style="padding:12px"><div class="kpi-label">Patrimonio</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totalBal)}</div></div>
-      <div class="kpi ${totals.neto>=0?'purple':'amber'}" style="padding:12px"><div class="kpi-label">Neto mes</div><div class="kpi-value" style="font-size:1.1rem">${totals.neto>=0?'+':''}${fmtShort(totals.neto)}</div></div>
+      <div class="kpi ${totals.neto>=0?'purple':'amber'}" style="padding:12px"><div class="kpi-label">Neto mes</div><div class="kpi-value" style="font-size:1.1rem">${totals.neto>=0?'<i class="ph ph-plus-circle"></i>':''}${fmtShort(totals.neto)}</div></div>
     </div>
 
     ${emGoal ? `
     <div class="card mb-3" style="padding:12px">
-      <div class="card-title">🛡️ Fondo de Emergencia</div>
+      <div class="card-title"><i class="ph ph-shield-check"></i> Fondo de Emergencia</div>
       <div class="flex justify-between fs-sm mb-1"><span>${fmt(emGoal.currentAmount)}</span><span class="text-2">${fmt(emGoal.targetAmount)}</span></div>
       <div class="progress-bar"><div class="progress-fill" style="width:${emPct}%;background:${emPct>=100?'var(--success)':'var(--warning)'}"></div></div>
       <div class="fs-xs text-2 mt-1">${emPct.toFixed(1)}% completado</div>
@@ -291,9 +291,9 @@ window.viewAgentDetail = async (id) => {
     </div>
 
     <div class="flex gap-2">
-      <button class="btn btn-primary btn-sm" onclick="closeModal('modal-generic');openHabsEditor('${id}')">⚡ Habilidades</button>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-generic');openEditAgent('${id}')">✏️ Editar perfil</button>
-      <button class="btn btn-danger btn-sm" onclick="closeModal('modal-generic');confirmDelete('${id}','${ag.name.replace(/'/g,'')}')">🗑 Eliminar</button>
+      <button class="btn btn-primary btn-sm" onclick="closeModal('modal-generic');openHabsEditor('${id}')"><i class="ph ph-lightning"></i> Habilidades</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-generic');openEditAgent('${id}')"><i class="ph ph-pencil"></i> Editar perfil</button>
+      <button class="btn btn-danger btn-sm" onclick="closeModal('modal-generic');confirmDelete('${id}','${ag.name.replace(/'/g,'')}')"><i class="ph ph-trash"></i> Eliminar</button>
     </div>
   `);
 };
@@ -302,7 +302,7 @@ window.viewAgentDetail = async (id) => {
 window.openEditAgent = (id) => {
   const ag = agents.find(a => a.id === id);
   if (!ag) return;
-  showGenericModal('✏️ Editar Agente', `
+  showGenericModal('<i class="ph ph-pencil"></i> Editar Agente', `
     <form onsubmit="submitEditAgent(event,'${id}')">
       <div class="form-group"><label>Nombre</label><input name="name" value="${ag.name||''}" required></div>
       <div class="form-group"><label>Email</label><input type="email" value="${ag.email||''}" disabled style="opacity:.6"></div>
@@ -311,13 +311,13 @@ window.openEditAgent = (id) => {
       <div class="form-group"><label>Situación</label>
         <select name="situation">
           ${['nuevo','en-crecimiento','estable','avanzado'].map(s =>
-            `<option value="${s}" ${ag.situation===s?'selected':''}>${{nuevo:'🟡 Nuevo',  'en-crecimiento':'🟠 En crecimiento',estable:'🟢 Estable',avanzado:'🔵 Avanzado'}[s]}</option>`
+            `<option value="${s}" ${ag.situation===s?'selected':''}>${{nuevo:'<span class="badge-dot" style="color:#f59e0b">●</span> Nuevo',  'en-crecimiento':'<span class="badge-dot" style="color:#f97316">●</span> En crecimiento',estable:'<span class="badge-dot" style="color:#10b981">●</span> Estable',avanzado:'<span class="badge-dot" style="color:#38bdf8">●</span> Avanzado'}[s]}</option>`
           ).join('')}
         </select>
       </div>
       <div class="form-group"><label>Estado</label>
         <select name="status">
-          <option value="activo" ${ag.status==='activo'?'selected':''}>✅ Activo</option>
+          <option value="activo" ${ag.status==='activo'?'selected':''}><i class="ph ph-check-circle"></i> Activo</option>
           <option value="inactivo" ${ag.status==='inactivo'?'selected':''}>⏸️ Inactivo</option>
         </select>
       </div>
@@ -364,10 +364,10 @@ async function invitar() {
         <div class="form-group">
           <label>Situación inicial</label>
           <select name="situation" onchange="updateHabsPreview(this.value)">
-            <option value="nuevo">🟡 Nuevo — sin historial</option>
-            <option value="en-crecimiento">🟠 En crecimiento</option>
-            <option value="estable" selected>🟢 Estable</option>
-            <option value="avanzado">🔵 Avanzado</option>
+            <option value="nuevo"><span class="badge-dot" style="color:#f59e0b">●</span> Nuevo — sin historial</option>
+            <option value="en-crecimiento"><span class="badge-dot" style="color:#f97316">●</span> En crecimiento</option>
+            <option value="estable" selected><span class="badge-dot" style="color:#10b981">●</span> Estable</option>
+            <option value="avanzado"><span class="badge-dot" style="color:#38bdf8">●</span> Avanzado</option>
           </select>
         </div>
         <div id="habs-preview" class="card mb-3" style="padding:12px"></div>
@@ -405,12 +405,12 @@ window.handleInvite = async (e) => {
     const link = `${window.location.origin}/register.html?token=${token}`;
     document.getElementById('invite-result').innerHTML = `
       <div class="alert alert-success">
-        ✅ <div style="flex:1">
+        <i class="ph ph-check-circle"></i> <div style="flex:1">
           <strong>Invitación generada para ${fd.get('email')}</strong>
           <div style="background:var(--surface2);border-radius:8px;padding:10px;margin-top:8px;word-break:break-all;font-size:.73rem;font-family:monospace">${link}</div>
           <div class="flex gap-2 mt-2">
-            <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${link}').then(()=>this.textContent='✓ Copiado!')">📋 Copiar</button>
-            <a href="https://wa.me/?text=${encodeURIComponent('Te invito a FinanceOS: '+link)}" target="_blank" class="btn btn-ghost btn-sm">💬 WhatsApp</a>
+            <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${link}').then(()=>this.textContent='✓ Copiado!')"><i class="ph ph-clipboard-text"></i> Copiar</button>
+            <a href="https://wa.me/?text=${encodeURIComponent('Te invito a FinanceOS: '<i class="ph ph-plus-circle"></i>link)}" target="_blank" class="btn btn-ghost btn-sm"><i class="ph ph-chat-text"></i> WhatsApp</a>
           </div>
         </div>
       </div>`;
@@ -427,7 +427,7 @@ window.handleInvite = async (e) => {
 // ═══════════════════════════════════════════════
 async function habilidades() {
   if (!agents.length) {
-    setContent(`<div class="empty-state"><div class="es-icon">⚡</div>Sin agentes para gestionar.</div>`);
+    setContent(`<div class="empty-state"><div class="es-icon"><i class="ph ph-lightning"></i></div>Sin agentes para gestionar.</div>`);
     return;
   }
   const firstId = agents[0].id;
@@ -479,7 +479,7 @@ window.renderHabsForAgent = async (agentId) => {
         <div style="flex:1;padding-right:12px">
           <div class="fs-sm fw-bold">${h.icon} ${h.name}</div>
           <div class="fs-xs text-2">${h.desc}</div>
-          ${belowMin ? `<div class="fs-xs" style="color:var(--warning);margin-top:2px">⚠️ Score recomendado: ${h.minScore} (actual: ${score})</div>` : ''}
+          ${belowMin ? `<div class="fs-xs" style="color:var(--warning);margin-top:2px"><i class="ph ph-warning-circle"></i> Score recomendado: ${h.minScore} (actual: ${score})</div>` : ''}
           ${h.minScore > 0 ? `<div class="fs-xs text-3 mt-1">Mín recomendado: ${h.minScore} pts</div>` : ''}
         </div>
         <label class="toggle">
@@ -489,8 +489,8 @@ window.renderHabsForAgent = async (agentId) => {
       </div>`;
     }).join('')}
     <div class="flex gap-2 mt-3">
-      <button class="btn btn-success btn-sm" onclick="enableAllHabs('${agentId}')">✅ Habilitar todo</button>
-      <button class="btn btn-ghost btn-sm" onclick="autoAssignHabs('${agentId}',${score})">🤖 Auto-asignar por score</button>
+      <button class="btn btn-success btn-sm" onclick="enableAllHabs('${agentId}')"><i class="ph ph-check-circle"></i> Habilitar todo</button>
+      <button class="btn btn-ghost btn-sm" onclick="autoAssignHabs('${agentId}',${score})"><i class="ph ph-robot"></i> Auto-asignar por score</button>
     </div>`;
 };
 
@@ -519,7 +519,7 @@ window.autoAssignHabs = async (agentId, score) => {
 // ═══════════════════════════════════════════════
 async function reportes() {
   if (!agents.length) {
-    setContent(`<div class="empty-state"><div class="es-icon">📊</div>Sin agentes para reportar.</div>`);
+    setContent(`<div class="empty-state"><div class="es-icon"><i class="ph ph-chart-bar"></i></div>Sin agentes para reportar.</div>`);
     return;
   }
 
@@ -539,18 +539,18 @@ async function reportes() {
         getAccounts().catch(() => []),
       ]);
       const totals  = calcPeriodTotals(txs, DEFAULT_CATS);
-      const balance = accounts.reduce((s, a) => s + calcAccountBalance(a, txs), 0);
+      const balance = accounts.reduce((s, a) => s <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txs), 0);
       return { ...ag, totals, balance, txCount: txs.length };
     } catch { return { ...ag, totals:{ingresos:0,egresos:0,ahorros:0,neto:0}, balance:0, txCount:0 }; }
     finally { ViewingAgent.clear(); }
   }));
 
-  const totalIngresos  = agentData.reduce((s,a) => s+a.totals.ingresos, 0);
-  const totalEgresos   = agentData.reduce((s,a) => s+a.totals.egresos, 0);
-  const totalAhorros   = agentData.reduce((s,a) => s+a.totals.ahorros, 0);
-  const totalPatrimonio = agentData.reduce((s,a) => s+a.balance, 0);
-  const avgScore       = agents.length ? Math.round(Object.values(agentScores).reduce((s,v)=>s+v,0)/agents.length) : 0;
-  const totalTxs       = agentData.reduce((s,a) => s+a.txCount, 0);
+  const totalIngresos  = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.totals.ingresos, 0);
+  const totalEgresos   = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.totals.egresos, 0);
+  const totalAhorros   = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.totals.ahorros, 0);
+  const totalPatrimonio = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.balance, 0);
+  const avgScore       = agents.length ? Math.round(Object.values(agentScores).reduce((s,v)=>s<i class="ph ph-plus-circle"></i>v,0)/agents.length) : 0;
+  const totalTxs       = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.txCount, 0);
 
   setContent(`
     <div class="grid-3 mb-3">
@@ -590,7 +590,7 @@ async function reportes() {
                 <td class="text-success">${fmtShort(ag.totals.ingresos)}</td>
                 <td class="text-danger">${fmtShort(ag.totals.egresos)}</td>
                 <td class="text-info">${fmtShort(ag.totals.ahorros)}</td>
-                <td style="color:${ag.totals.neto>=0?'var(--success)':'var(--danger)'}">${ag.totals.neto>=0?'+':''}${fmtShort(ag.totals.neto)}</td>
+                <td style="color:${ag.totals.neto>=0?'var(--success)':'var(--danger)'}">${ag.totals.neto>=0?'<i class="ph ph-plus-circle"></i>':''}${fmtShort(ag.totals.neto)}</td>
                 <td>${ag.txCount}</td>
               </tr>`;
             }).join('')}
@@ -615,7 +615,7 @@ function renderScoresChart(agentData) {
       labels: sorted.map(a => a.name.split(' ')[0]),
       datasets: [{
         data: sorted.map(a => agentScores[a.id]||0),
-        backgroundColor: sorted.map(a => scoreColor(agentScores[a.id]||0)+'99'),
+        backgroundColor: sorted.map(a => scoreColor(agentScores[a.id]||0)<i class="ph ph-plus-circle"></i>'99'),
         borderColor: sorted.map(a => scoreColor(agentScores[a.id]||0)),
         borderWidth: 2, borderRadius: 6, borderSkipped: false
       }]
@@ -670,7 +670,7 @@ async function configuracion() {
     </div>
     <div class="card" style="max-width:480px;margin:12px auto 0">
       <div class="card-title">Acceso</div>
-      <button class="btn btn-danger btn-block" onclick="handleLogout()">🚪 Cerrar sesión</button>
+      <button class="btn btn-danger btn-block" onclick="handleLogout()"><i class="ph ph-sign-out"></i> Cerrar sesión</button>
     </div>`);
 }
 
@@ -683,7 +683,7 @@ window.submitBrokerConfig = async (e) => {
   document.getElementById('broker-office-label').textContent = office || 'Broker';
   const av = document.getElementById('user-avatar');
   if (av) av.textContent = name[0].toUpperCase();
-  alert('✅ Perfil actualizado');
+  alert('<i class="ph ph-check-circle"></i> Perfil actualizado');
 };
 
 // ═══════════════════════════════════════════════
@@ -722,7 +722,7 @@ init().catch(err => {
   console.error('Broker init error:', err);
   document.getElementById('loading-screen').innerHTML = `
     <div style="text-align:center;padding:24px;color:#f1f5f9">
-      <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
+      <div style="font-size:2rem;margin-bottom:12px"><i class="ph ph-warning-circle"></i></div>
       <div style="font-weight:700;margin-bottom:8px">Error al cargar</div>
       <div style="font-size:.82rem;color:#94a3b8;margin-bottom:16px">${err.message}</div>
       <button onclick="location.reload()" style="padding:10px 20px;background:#6366f1;color:#fff;border:none;border-radius:8px;cursor:pointer">Reintentar</button>

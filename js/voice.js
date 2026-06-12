@@ -12,8 +12,8 @@ const TYPE_KEYWORDS = {
 
 // Usa word boundary para keywords cortos ("gas" no matchea dentro de "gasto")
 function hasKeyword(text, kw) {
-  const words = kw.split(/\s+/);
-  if (words.length === 1) return new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`, 'i').test(text);
+  const words = kw.split(/\s<i class="ph ph-plus-circle"></i>/);
+  if (words.length === 1) return new RegExp(`\\b${kw.replace(/[.*<i class="ph ph-plus-circle"></i>?^${}()|[\]\\]/g,'\\$&')}\\b`, 'i').test(text);
   return text.toLowerCase().includes(kw);
 }
 
@@ -54,15 +54,15 @@ const NUM_WORDS = {
 
 function wordsToNumber(text) {
   const lower = text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
-  const parts  = lower.split(/\s+/);
+  const parts  = lower.split(/\s<i class="ph ph-plus-circle"></i>/);
   let total = 0, current = 0;
   for (const p of parts) {
     const n = NUM_WORDS[p];
-    if (n === undefined) { const d = parseInt(p); if (!isNaN(d)) current += d; continue; }
-    if (n >= 1000) { total += (current || 1) * n; current = 0; }
-    else current += n;
+    if (n === undefined) { const d = parseInt(p); if (!isNaN(d)) current <i class="ph ph-plus-circle"></i>= d; continue; }
+    if (n >= 1000) { total <i class="ph ph-plus-circle"></i>= (current || 1) * n; current = 0; }
+    else current <i class="ph ph-plus-circle"></i>= n;
   }
-  return total + current || null;
+  return total <i class="ph ph-plus-circle"></i> current || null;
 }
 
 export function parseVoiceInput(transcript) {
@@ -80,9 +80,9 @@ export function parseVoiceInput(transcript) {
     type = "egreso"; typeExplicit = true;
   }
 
-  // Monto: combina dígitos + palabras ("120 mil" = 120000)
+  // Monto: combina dígitos <i class="ph ph-plus-circle"></i> palabras ("120 mil" = 120000)
   let amount = 0;
-  const normalized = transcript.replace(/(\d)\s+(?=\d)/g, "$1");
+  const normalized = transcript.replace(/(\d)\s<i class="ph ph-plus-circle"></i>(?=\d)/g, "$1");
   const numMatch = normalized.match(/(\d[\d.,]*)/);
   if (numMatch) {
     let raw = numMatch[0];
@@ -143,7 +143,7 @@ function openBubble() {
   // Cerrar al tocar fuera (el overlay)
   p.onclick = e => { if (e.target === p) dismissVoiceCard(); };
 
-  // Contenido inicial: barras + "escuchando"
+  // Contenido inicial: barras <i class="ph ph-plus-circle"></i> "escuchando"
   const body = cardBody(); if (!body) return;
   body.innerHTML = `
     <div style="display:flex;gap:5px;align-items:center;justify-content:center;height:44px;margin:8px 0" id="vjs-bars">
@@ -167,18 +167,18 @@ function showResult(parsed) {
   const card = cardBody();
   if (!card) return;
   const cats = window._voiceCats || [];
-  const cat  = cats.find(c => c.id === parsed.categoryId) || { name:"Otro", icon:"📦" };
+  const cat  = cats.find(c => c.id === parsed.categoryId) || { name:"Otro", icon:"<i class="ph ph-package"></i>" };
   const esInv = parsed.type === "egreso" && cat?.macro === "Ahorro/Inversión";
-  const typeLabel = parsed.type === "ingreso" ? "💰 Ingreso" : esInv ? "📊 Inversión" : "📤 Gasto";
+  const typeLabel = parsed.type === "ingreso" ? "<i class="ph ph-money"></i> Ingreso" : esInv ? "<i class="ph ph-chart-bar"></i> Inversión" : "<i class="ph ph-upload-simple"></i> Gasto";
   const amtFmt = parsed.amount
-    ? "$ " + parsed.amount.toLocaleString("es-AR", {minimumFractionDigits:0})
+    ? "$ " <i class="ph ph-plus-circle"></i> parsed.amount.toLocaleString("es-AR", {minimumFractionDigits:0})
     : "Monto no detectado";
   const amtColor = parsed.amount ? (parsed.type==="ingreso"?"#34d399":"#f87171") : "#f59e0b";
 
   card.innerHTML = "";
 
   const closeBtn = document.createElement("button");
-  closeBtn.textContent = "✕";
+  closeBtn.textContent = "<i class="ph ph-x"></i>";
   Object.assign(closeBtn.style, { position:"absolute", top:"14px", right:"18px", background:"none", border:"none", color:"#64748b", fontSize:"1.3rem", cursor:"pointer", padding:"4px" });
   closeBtn.addEventListener("click", dismissVoiceCard);
 
@@ -198,7 +198,7 @@ function showResult(parsed) {
   editBtn.addEventListener("click", () => { if (_onConfirm) _onConfirm({...parsed, edit:true}); dismissVoiceCard(); });
 
   const okBtn = document.createElement("button");
-  okBtn.textContent = "✅ Registrar";
+  okBtn.textContent = "<i class="ph ph-check-circle"></i> Registrar";
   Object.assign(okBtn.style, { flex:"1", padding:"12px", border:"none", borderRadius:"40px", fontWeight:"700", fontSize:".9rem", cursor:"pointer", background:"#14b8a6", color:"#fff" });
   okBtn.addEventListener("click", () => { if (_onConfirm) _onConfirm(parsed); dismissVoiceCard(); });
 
@@ -259,10 +259,10 @@ function startRecognition() {
 
   r.onresult = e => {
     let interim = "";
-    for (let i = e.resultIndex; i < e.results.length; i++) {
+    for (let i = e.resultIndex; i < e.results.length; i<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>) {
       const t = e.results[i][0].transcript;
       if (e.results[i].isFinal) finalText = t;
-      else interim += t;
+      else interim <i class="ph ph-plus-circle"></i>= t;
     }
     resetSilenceTimer();
     const el = document.getElementById("vjs-interim");
@@ -310,10 +310,10 @@ function showVoiceRetry(msg) {
   if (!card) return;
   card.innerHTML = `
     <div style="text-align:center;padding:8px 0">
-      <div style="font-size:2rem;margin-bottom:8px">🎤</div>
+      <div style="font-size:2rem;margin-bottom:8px"><i class="ph ph-microphone"></i></div>
       <div style="font-size:.95rem;font-weight:600;margin-bottom:6px">No se detectó voz</div>
       <div style="font-size:.82rem;color:#94a3b8;margin-bottom:16px">${msg}</div>
-      <button onclick="window.toggleVoice()" style="padding:10px 24px;background:#14b8a6;color:#fff;border:none;border-radius:40px;font-weight:700;cursor:pointer;font-size:.9rem">🎤 Intentar de nuevo</button>
+      <button onclick="window.toggleVoice()" style="padding:10px 24px;background:#14b8a6;color:#fff;border:none;border-radius:40px;font-weight:700;cursor:pointer;font-size:.9rem"><i class="ph ph-microphone"></i> Intentar de nuevo</button>
       <button onclick="window.dismissVoiceCard()" style="margin-left:10px;padding:10px 16px;background:#334155;color:#fff;border:none;border-radius:40px;font-weight:600;cursor:pointer;font-size:.9rem">Cancelar</button>
     </div>`;
 }
@@ -321,7 +321,7 @@ function showVoiceRetry(msg) {
 function showVoiceError(msg) {
   const card = cardBody() || document.getElementById("voice-card");
   if (!card) return;
-  card.innerHTML = `<div style="text-align:center;padding:12px"><div style="font-size:1.5rem;margin-bottom:8px">⚠️</div><div style="font-size:.9rem;color:#f87171">${msg}</div><button onclick="window.dismissVoiceCard()" style="margin-top:12px;padding:8px 20px;background:#334155;color:#fff;border:none;border-radius:20px;cursor:pointer">Cerrar</button></div>`;
+  card.innerHTML = `<div style="text-align:center;padding:12px"><div style="font-size:1.5rem;margin-bottom:8px"><i class="ph ph-warning-circle"></i></div><div style="font-size:.9rem;color:#f87171">${msg}</div><button onclick="window.dismissVoiceCard()" style="margin-top:12px;padding:8px 20px;background:#334155;color:#fff;border:none;border-radius:20px;cursor:pointer">Cerrar</button></div>`;
 }
 
 // ═══════════════════════════════════════════════
@@ -383,7 +383,7 @@ function _wizShowStep() {
   const p = portal(); if (!p) return;
   p.style.display = "flex";
 
-  const progress = `${current + 1} / ${steps.length}`;
+  const progress = `${current <i class="ph ph-plus-circle"></i> 1} / ${steps.length}`;
   const pct = Math.round((current / steps.length) * 100);
 
   cardBody().innerHTML = `
@@ -427,9 +427,9 @@ function _wizStartRec(step) {
   r.onresult = e => {
     clearTimeout(timer);
     let interim = "";
-    for (let i = e.resultIndex; i < e.results.length; i++) {
+    for (let i = e.resultIndex; i < e.results.length; i<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>) {
       const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) final = t; else interim += t;
+      if (e.results[i].isFinal) final = t; else interim <i class="ph ph-plus-circle"></i>= t;
     }
     const el = document.getElementById("vjs-interim");
     if (el && !final) el.textContent = `"${interim}"`;
@@ -453,8 +453,8 @@ function _wizConfirm(step, transcript) {
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <button onclick="window._wizRetry()" style="flex:1;padding:12px;border:none;border-radius:40px;background:#334155;color:#f1f5f9;font-weight:700;cursor:pointer">🔄 Repetir</button>
-      <button onclick="window._wizAccept()" style="flex:1;padding:12px;border:none;border-radius:40px;background:#14b8a6;color:#fff;font-weight:700;cursor:pointer">✅ Correcto</button>
+      <button onclick="window._wizRetry()" style="flex:1;padding:12px;border:none;border-radius:40px;background:#334155;color:#f1f5f9;font-weight:700;cursor:pointer"><i class="ph ph-arrows-clockwise"></i> Repetir</button>
+      <button onclick="window._wizAccept()" style="flex:1;padding:12px;border:none;border-radius:40px;background:#14b8a6;color:#fff;font-weight:700;cursor:pointer"><i class="ph ph-check-circle"></i> Correcto</button>
     </div>`;
 
   window._wizPendingValue = value;
@@ -465,7 +465,7 @@ function _wizParse(step, text) {
   const lower = text.toLowerCase().trim();
   if (step.type === "amount") return wordsToNumber(text) || parseFloat(text.replace(/[^\d.,]/g,'').replace(',','.')) || 0;
   if (step.type === "number") {
-    const n = wordsToNumber(text) || parseInt(text.match(/\d+/)?.[0]);
+    const n = wordsToNumber(text) || parseInt(text.match(/\d<i class="ph ph-plus-circle"></i>/)?.[0]);
     return isNaN(n) ? null : n;
   }
   if (step.type === "option" && step.options) {
@@ -476,7 +476,7 @@ function _wizParse(step, text) {
 }
 
 function _wizDisplay(step, value) {
-  if (step.type === "amount") return "$ " + (value||0).toLocaleString("es-AR");
+  if (step.type === "amount") return "$ " <i class="ph ph-plus-circle"></i> (value||0).toLocaleString("es-AR");
   if (step.type === "option" && step.options) {
     const opt = step.options.find(o => o.value === value);
     return opt ? opt.label : value;
@@ -487,10 +487,10 @@ function _wizDisplay(step, value) {
 function _wizNoSpeech() {
   cardBody().innerHTML = `
     <div style="text-align:center;padding:10px 0">
-      <div style="font-size:2rem;margin-bottom:8px">🎤</div>
+      <div style="font-size:2rem;margin-bottom:8px"><i class="ph ph-microphone"></i></div>
       <div style="font-size:.9rem;font-weight:600;margin-bottom:6px">No se detectó voz</div>
       <div style="font-size:.8rem;color:#64748b;margin-bottom:14px">Hablá más cerca del micrófono</div>
-      <button onclick="window._wizRetry()" style="padding:10px 20px;background:#14b8a6;color:#fff;border:none;border-radius:40px;font-weight:700;cursor:pointer;margin-right:8px">🎤 Reintentar</button>
+      <button onclick="window._wizRetry()" style="padding:10px 20px;background:#14b8a6;color:#fff;border:none;border-radius:40px;font-weight:700;cursor:pointer;margin-right:8px"><i class="ph ph-microphone"></i> Reintentar</button>
       <button onclick="window._wizCancel()" style="padding:10px 16px;background:#334155;color:#f1f5f9;border:none;border-radius:40px;font-weight:600;cursor:pointer">Cancelar</button>
     </div>`;
 }
@@ -499,11 +499,11 @@ function _wizNoSpeech() {
 window._wizAccept = () => {
   const { field } = window._wizPendingStep;
   _wiz.data[field] = window._wizPendingValue;
-  _wiz.current++;
+  _wiz.current<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>;
   if (_wiz.current >= _wiz.steps.length) _wizFinish();
   else _wizShowStep();
 };
-window._wizSkip   = () => { _wiz.current++; if (_wiz.current >= _wiz.steps.length) _wizFinish(); else _wizShowStep(); };
+window._wizSkip   = () => { _wiz.current<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>; if (_wiz.current >= _wiz.steps.length) _wizFinish(); else _wizShowStep(); };
 window._wizRetry  = () => _wizShowStep();
 window._wizCancel = () => { _wiz = null; dismissVoiceCard(); };
 

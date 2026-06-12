@@ -8,6 +8,7 @@
 <title>FinanceOS — Mi Finanzas</title>
 <link rel="stylesheet" href="../css/styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2.1.1/css/phosphor-icons.min.css">
 <style>
 html,body{height:100%;overflow:hidden;display:flex;flex-direction:column}
 :root{--nav-h:64px;--top-h:56px;--safe-bottom:env(safe-area-inset-bottom,0px)}
@@ -190,7 +191,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 
 <!-- TOPBAR -->
 <div id="topbar" class="hidden">
-  <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+  <button id="menu-btn" onclick="toggleSidebar()"><i class="ph ph-list"></i></button>
   <span class="top-logo">Finance<span>OS</span></span>
   <span id="topbar-title"></span>
   <div id="topbar-action"></div>
@@ -206,21 +207,21 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     </div>
     <nav id="nav">
       <div class="nav-section">Principal</div>
-      <button class="nav-item active" data-page="inicio"><span class="ni">🏠</span> Inicio</button>
-      <button class="nav-item" data-page="movimientos" data-hab="movimientos"><span class="ni">💳</span> Movimientos</button>
-      <button class="nav-item" data-page="cuentas"><span class="ni">🏦</span> Cuentas</button>
+      <button class="nav-item active" data-page="inicio"><span class="ni"><i class="ph ph-house"></i></span> Inicio</button>
+      <button class="nav-item" data-page="movimientos" data-hab="movimientos"><span class="ni"><i class="ph ph-credit-card"></i></span> Movimientos</button>
+      <button class="nav-item" data-page="cuentas"><span class="ni"><i class="ph ph-bank"></i></span> Cuentas</button>
       <div class="nav-section">Estrategia</div>
-      <button class="nav-item" data-page="presupuesto" data-hab="presupuesto"><span class="ni">📋</span> Presupuesto</button>
-      <button class="nav-item" data-page="objetivos" data-hab="objetivos"><span class="ni">🛡️</span> Fondo Emergencia</button>
+      <button class="nav-item" data-page="presupuesto" data-hab="presupuesto"><span class="ni"><i class="ph ph-clipboard-text"></i></span> Presupuesto</button>
+      <button class="nav-item" data-page="objetivos" data-hab="objetivos"><span class="ni"><i class="ph ph-shield-check"></i></span> Fondo Emergencia</button>
       <div class="nav-section">Crecimiento</div>
-      <button class="nav-item" data-page="inversiones" data-hab="inversiones"><span class="ni">📈</span> Inversiones</button>
-      <button class="nav-item" data-page="credito" data-hab="credito"><span class="ni">💳</span> Crédito y Deuda</button>
+      <button class="nav-item" data-page="inversiones" data-hab="inversiones"><span class="ni"><i class="ph ph-trend-up"></i></span> Inversiones</button>
+      <button class="nav-item" data-page="credito" data-hab="credito"><span class="ni"><i class="ph ph-credit-card"></i></span> Crédito y Deuda</button>
       <div class="nav-section">Análisis</div>
-      <button class="nav-item" data-page="reportes" data-hab="reportes"><span class="ni">📊</span> Reportes</button>
-      <button class="nav-item" data-page="educacion" data-hab="educacion"><span class="ni">🎓</span> Educación</button>
+      <button class="nav-item" data-page="reportes" data-hab="reportes"><span class="ni"><i class="ph ph-chart-bar"></i></span> Reportes</button>
+      <button class="nav-item" data-page="educacion" data-hab="educacion"><span class="ni"><i class="ph ph-graduation-cap"></i></span> Educación</button>
     </nav>
     <div id="sidebar-footer">
-      <button class="btn btn-ghost btn-block btn-sm" onclick="handleLogout()">🚪 Cerrar sesión</button>
+      <button class="btn btn-ghost btn-block btn-sm" onclick="handleLogout()"><i class="ph ph-sign-out"></i> Cerrar sesión</button>
     </div>
   </div>
 
@@ -233,26 +234,26 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 
 <!-- BOTTOM NAV -->
 <div id="bottom-nav" class="hidden">
-  <button class="bn-item active" data-page="inicio"><span class="bn-icon">🏠</span>Inicio</button>
-  <button class="bn-item" data-page="movimientos"><span class="bn-icon">💳</span>Movimientos</button>
+  <button class="bn-item active" data-page="inicio"><span class="bn-icon"><i class="ph ph-house"></i></span>Inicio</button>
+  <button class="bn-item" data-page="movimientos"><span class="bn-icon"><i class="ph ph-credit-card"></i></span>Movimientos</button>
   <div class="bn-fab">
-    <button class="bn-fab-btn" onclick="openNewTx('egreso')">＋</button>
+    <button class="bn-fab-btn" onclick="openNewTx('egreso')"><i class="ph ph-plus"></i></button>
     <span class="bn-fab-label">Registrar</span>
   </div>
-  <button class="bn-item" data-page="reportes"><span class="bn-icon">📊</span>Reportes</button>
-  <button class="bn-item" data-page="mas"><span class="bn-icon">☰</span>Más</button>
+  <button class="bn-item" data-page="reportes"><span class="bn-icon"><i class="ph ph-chart-bar"></i></span>Reportes</button>
+  <button class="bn-item" data-page="mas"><span class="bn-icon"><i class="ph ph-dots-three-outline-vertical"></i></span>Más</button>
 </div>
 
 <!-- VOICE FAB (izquierdo) -->
 <div id="voice-fab" class="hidden" onclick="toggleVoice()" title="Registrar por voz">
-  <span class="voice-icon" id="voice-icon">🎤</span>
+  <span class="voice-icon" id="voice-icon"><i class="ph ph-microphone"></i></span>
   <span class="voice-tooltip" id="voice-tooltip">Decí un gasto o ingreso</span>
 </div>
 
 <!-- VOICE PORTAL -->
 <div id="voice-portal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;background:rgba(0,0,0,.72);align-items:flex-end;justify-content:center;font-family:system-ui,sans-serif">
   <div id="voice-card" style="background:#1e293b;border-radius:18px 18px 0 0;width:100%;max-width:500px;padding:22px 24px 28px;color:#f1f5f9;box-shadow:0 -4px 24px rgba(0,0,0,.5);position:relative">
-    <button id="voice-portal-close" style="position:fixed;top:14px;right:18px;z-index:1;background:none;border:none;color:#64748b;font-size:1.4rem;cursor:pointer;line-height:1;padding:4px">✕</button>
+    <button id="voice-portal-close" style="position:fixed;top:14px;right:18px;z-index:1;background:none;border:none;color:#64748b;font-size:1.4rem;cursor:pointer;line-height:1;padding:4px"><i class="ph ph-x"></i></button>
     <div id="voice-card-body" style="max-height:75vh;overflow-y:auto;padding-right:4px"></div>
   </div>
 </div>
@@ -263,7 +264,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="modal-handle"></div>
     <div class="modal-header">
       <span class="modal-title" id="modal-tx-title">Nueva Transacción</span>
-      <button class="modal-close" onclick="closeModal('modal-tx')">✕</button>
+      <button class="modal-close" onclick="closeModal('modal-tx')"><i class="ph ph-x"></i></button>
     </div>
     <div class="modal-body" id="modal-tx-body"></div>
   </div>
@@ -274,7 +275,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="modal-handle"></div>
     <div class="modal-header">
       <span class="modal-title" id="modal-generic-title">—</span>
-      <button class="modal-close" onclick="closeModal('modal-generic')">✕</button>
+      <button class="modal-close" onclick="closeModal('modal-generic')"><i class="ph ph-x"></i></button>
     </div>
     <div class="modal-body" id="modal-generic-body"></div>
   </div>
@@ -286,7 +287,7 @@ window.addEventListener('unhandledrejection', (e) => {
   if (!ls) return;
   ls.innerHTML = `
     <div style="text-align:center;padding:24px;max-width:380px">
-      <div style="font-size:2.5rem;margin-bottom:12px">⚙️</div>
+      <div style="font-size:2.5rem;margin-bottom:12px"><i class="ph ph-gear"></i></div>
       <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:8px">Firebase no configurado</div>
       <div style="color:#94a3b8;font-size:.82rem;line-height:1.6;margin-bottom:16px">
         Falta <code style="color:#f59e0b">firebase-config.js</code>.<br>

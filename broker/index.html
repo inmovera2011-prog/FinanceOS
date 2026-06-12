@@ -7,6 +7,7 @@
 <title>FinanceOS — Broker</title>
 <link rel="stylesheet" href="../css/styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2.1.1/css/phosphor-icons.min.css">
 <style>
 /* ── BROKER SHELL ── */
 html,body{height:100%;overflow:hidden;display:flex;flex-direction:column}
@@ -129,7 +130,7 @@ tr:last-child td{border-bottom:none}
 
 <!-- TOPBAR -->
 <div id="topbar" class="hidden">
-  <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+  <button id="menu-btn" onclick="toggleSidebar()"><i class="ph ph-list"></i></button>
   <span class="top-logo">Finance<span>OS</span></span>
   <span class="top-badge">Broker</span>
   <span id="topbar-title"></span>
@@ -149,17 +150,17 @@ tr:last-child td{border-bottom:none}
     </div>
     <nav id="nav">
       <div class="nav-section">Panel</div>
-      <button class="nav-item active" data-page="dashboard"><span class="ni">📊</span> Dashboard</button>
-      <button class="nav-item" data-page="agentes"><span class="ni">👥</span> Mis Agentes</button>
-      <button class="nav-item" data-page="invitar"><span class="ni">➕</span> Invitar Agente</button>
+      <button class="nav-item active" data-page="dashboard"><span class="ni"><i class="ph ph-chart-bar"></i></span> Dashboard</button>
+      <button class="nav-item" data-page="agentes"><span class="ni"><i class="ph ph-users"></i></span> Mis Agentes</button>
+      <button class="nav-item" data-page="invitar"><span class="ni"><i class="ph ph-plus-circle"></i></span> Invitar Agente</button>
       <div class="nav-section">Gestión</div>
-      <button class="nav-item" data-page="habilidades"><span class="ni">⚡</span> Habilidades</button>
-      <button class="nav-item" data-page="reportes"><span class="ni">📈</span> Reportes del equipo</button>
+      <button class="nav-item" data-page="habilidades"><span class="ni"><i class="ph ph-lightning"></i></span> Habilidades</button>
+      <button class="nav-item" data-page="reportes"><span class="ni"><i class="ph ph-trend-up"></i></span> Reportes del equipo</button>
       <div class="nav-section">Cuenta</div>
-      <button class="nav-item" data-page="configuracion"><span class="ni">⚙️</span> Configuración</button>
+      <button class="nav-item" data-page="configuracion"><span class="ni"><i class="ph ph-gear"></i></span> Configuración</button>
     </nav>
     <div id="sidebar-footer">
-      <button class="btn btn-ghost btn-block btn-sm" onclick="handleLogout()">🚪 Cerrar sesión</button>
+      <button class="btn btn-ghost btn-block btn-sm" onclick="handleLogout()"><i class="ph ph-sign-out"></i> Cerrar sesión</button>
     </div>
   </div>
 
@@ -173,11 +174,11 @@ tr:last-child td{border-bottom:none}
 
 <!-- BOTTOM NAV -->
 <div id="bottom-nav" class="hidden">
-  <button class="bn-item active" data-page="dashboard"><span class="bn-icon">📊</span>Panel</button>
-  <button class="bn-item" data-page="agentes"><span class="bn-icon">👥</span>Agentes</button>
-  <button class="bn-item" data-page="invitar"><span class="bn-icon">➕</span>Invitar</button>
-  <button class="bn-item" data-page="habilidades"><span class="bn-icon">⚡</span>Habilidades</button>
-  <button class="bn-item" data-page="configuracion"><span class="bn-icon">⚙️</span>Config</button>
+  <button class="bn-item active" data-page="dashboard"><span class="bn-icon"><i class="ph ph-chart-bar"></i></span>Panel</button>
+  <button class="bn-item" data-page="agentes"><span class="bn-icon"><i class="ph ph-users"></i></span>Agentes</button>
+  <button class="bn-item" data-page="invitar"><span class="bn-icon"><i class="ph ph-plus-circle"></i></span>Invitar</button>
+  <button class="bn-item" data-page="habilidades"><span class="bn-icon"><i class="ph ph-lightning"></i></span>Habilidades</button>
+  <button class="bn-item" data-page="configuracion"><span class="bn-icon"><i class="ph ph-gear"></i></span>Config</button>
 </div>
 
 <!-- MODALES -->
@@ -186,7 +187,7 @@ tr:last-child td{border-bottom:none}
     <div class="modal-handle"></div>
     <div class="modal-header">
       <span class="modal-title" id="modal-generic-title">—</span>
-      <button class="modal-close" onclick="closeModal('modal-generic')">✕</button>
+      <button class="modal-close" onclick="closeModal('modal-generic')"><i class="ph ph-x"></i></button>
     </div>
     <div class="modal-body" id="modal-generic-body"></div>
   </div>
@@ -199,7 +200,7 @@ window.addEventListener('unhandledrejection', (e) => {
   if (!ls) return;
   ls.innerHTML = `
     <div style="text-align:center;padding:24px;max-width:380px">
-      <div style="font-size:2.5rem;margin-bottom:12px">⚙️</div>
+      <div style="font-size:2.5rem;margin-bottom:12px"><i class="ph ph-gear"></i></div>
       <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:8px">Firebase no configurado</div>
       <div style="color:#94a3b8;font-size:.82rem;line-height:1.6;margin-bottom:16px">
         Falta <code style="color:#f59e0b">firebase-config.js</code>.<br>

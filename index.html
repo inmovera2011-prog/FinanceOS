@@ -8,6 +8,7 @@
 <title>FinanceOS</title>
 <link rel="stylesheet" href="css/styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2.1.1/css/phosphor-icons.min.css">
 </head>
 <body>
 
@@ -35,16 +36,16 @@
         <div class="form-group">
           <label>Correo electr&oacute;nico</label>
           <div class="inp-wrap">
-            <span class="inp-icon">✉️</span>
+            <span class="inp-icon"><i class="ph ph-envelope"></i></span>
             <input id="in-email" type="email" placeholder="tu@email.com" autocomplete="email" required>
           </div>
         </div>
         <div class="form-group">
           <label>Contrase&ntilde;a</label>
           <div class="inp-wrap">
-            <span class="inp-icon">🔒</span>
+            <span class="inp-icon"><i class="ph ph-lock"></i></span>
             <input id="in-pass" type="password" placeholder="••••••••" autocomplete="current-password" required>
-            <button type="button" class="inp-eye" onclick="toggleEye('in-pass',this)">👁</button>
+            <button type="button" class="inp-eye" onclick="toggleEye('in-pass',this)"><i class="ph ph-eye"></i></button>
           </div>
           <button type="button" class="forgot" onclick="doForgot()">¿Olvidaste tu contrase&ntilde;a?</button>
         </div>
@@ -63,25 +64,25 @@
         <div class="form-group">
           <label>Correo electr&oacute;nico</label>
           <div class="inp-wrap">
-            <span class="inp-icon">✉️</span>
+            <span class="inp-icon"><i class="ph ph-envelope"></i></span>
             <input id="reg-email" type="email" placeholder="tu@email.com" autocomplete="email" required>
           </div>
         </div>
         <div class="form-group">
           <label>Contrase&ntilde;a</label>
           <div class="inp-wrap">
-            <span class="inp-icon">🔒</span>
+            <span class="inp-icon"><i class="ph ph-lock"></i></span>
             <input id="reg-pass" type="password" placeholder="M&iacute;nimo 8 caracteres" autocomplete="new-password" minlength="8" oninput="checkPw(this)" required>
-            <button type="button" class="inp-eye" onclick="toggleEye('reg-pass',this)">👁</button>
+            <button type="button" class="inp-eye" onclick="toggleEye('reg-pass',this)"><i class="ph ph-eye"></i></button>
           </div>
           <div class="pw-bar" id="pw-bar"></div>
         </div>
         <div class="form-group">
           <label>Confirmar contrase&ntilde;a</label>
           <div class="inp-wrap">
-            <span class="inp-icon">🔒</span>
+            <span class="inp-icon"><i class="ph ph-lock"></i></span>
             <input id="reg-pass2" type="password" placeholder="Repet&iacute; tu contrase&ntilde;a" autocomplete="new-password" required>
-            <button type="button" class="inp-eye" onclick="toggleEye('reg-pass2',this)">👁</button>
+            <button type="button" class="inp-eye" onclick="toggleEye('reg-pass2',this)"><i class="ph ph-eye"></i></button>
           </div>
         </div>
         <button type="submit" class="btn btn-primary btn-block" id="btn-reg">Crear cuenta</button>
@@ -159,7 +160,7 @@ window.doForgot = async () => {
   if (!email) { showAlertAuth('Ingres&aacute; tu correo primero.', 'warning'); return; }
   try {
     await resetPassword(email);
-    showAlertAuth('✅ Revis&aacute; tu correo para restablecer la contrase&ntilde;a.', 'success');
+    showAlertAuth('<i class="ph ph-check-circle"></i> Revis&aacute; tu correo para restablecer la contrase&ntilde;a.', 'success');
   } catch(err) { showAlertAuth(friendlyErrAuth(err)); }
 };
 
@@ -167,7 +168,7 @@ window.doForgot = async () => {
 window.toggleEye = (id, btn) => {
   const i = document.getElementById(id);
   i.type = i.type==='password'?'text':'password';
-  btn.textContent = i.type==='password'?'👁':'🙈';
+  btn.innerHTML = i.type==='password'?'<i class="ph ph-eye"></i>':'<i class="ph ph-eye-slash"></i>';
 };
 window.checkPw = (inp) => {
   const v=inp.value, bar=document.getElementById('pw-bar');
