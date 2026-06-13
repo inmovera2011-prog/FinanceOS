@@ -170,7 +170,7 @@ function renderHealthChart(h, w, c) {
 // ═══════════════════════════════════════════════
 async function agentes() {
   document.getElementById('topbar-action').innerHTML =
-    `<button class="btn btn-primary btn-sm" onclick="navigate('invitar')"><i class="ph ph-plus-circle"></i> Invitar</button>`;
+    `<button class="btn btn-primary btn-sm" onclick="navigate('invitar')"><<i class="ph ph-plus-circle"></i> Invitar</button>`;
 
   setContent(`
     <div class="card">
@@ -252,7 +252,7 @@ window.viewAgentDetail = async (id) => {
   ViewingAgent.clear();
 
   const totals = calcPeriodTotals(txs, DEFAULT_CATS);
-  const totalBal = accounts.reduce((sum, a) => sum <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txs), 0);
+  const totalBal = accounts.reduce((sum, a) => sum + calcAccountBalance(a, txs), 0);
   const emGoal = goals.find(g => g.type === 'emergency_fund');
   const emPct  = emGoal ? Math.min(100, (emGoal.currentAmount / emGoal.targetAmount) * 100) : 0;
 
@@ -272,7 +272,7 @@ window.viewAgentDetail = async (id) => {
       <div class="kpi green" style="padding:12px"><div class="kpi-label">Ingresos mes</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totals.ingresos)}</div></div>
       <div class="kpi red" style="padding:12px"><div class="kpi-label">Gastos mes</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totals.egresos)}</div></div>
       <div class="kpi blue" style="padding:12px"><div class="kpi-label">Patrimonio</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totalBal)}</div></div>
-      <div class="kpi ${totals.neto>=0?'purple':'amber'}" style="padding:12px"><div class="kpi-label">Neto mes</div><div class="kpi-value" style="font-size:1.1rem">${totals.neto>=0?'<i class="ph ph-plus-circle"></i>':''}${fmtShort(totals.neto)}</div></div>
+      <div class="kpi ${totals.neto>=0?'purple':'amber'}" style="padding:12px"><div class="kpi-label">Neto mes</div><div class="kpi-value" style="font-size:1.1rem">${totals.neto>=0?'<<i class="ph ph-plus-circle"></i>':''}${fmtShort(totals.neto)}</div></div>
     </div>
 
     ${emGoal ? `
@@ -410,7 +410,7 @@ window.handleInvite = async (e) => {
           <div style="background:var(--surface2);border-radius:8px;padding:10px;margin-top:8px;word-break:break-all;font-size:.73rem;font-family:monospace">${link}</div>
           <div class="flex gap-2 mt-2">
             <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${link}').then(()=>this.textContent='✓ Copiado!')"><i class="ph ph-clipboard-text"></i> Copiar</button>
-            <a href="https://wa.me/?text=${encodeURIComponent('Te invito a FinanceOS: '<i class="ph ph-plus-circle"></i>link)}" target="_blank" class="btn btn-ghost btn-sm"><i class="ph ph-chat-text"></i> WhatsApp</a>
+            <a href="https://wa.me/?text=${encodeURIComponent('Te invito a FinanceOS: '<<i class="ph ph-plus-circle"></i>link)}" target="_blank" class="btn btn-ghost btn-sm"><i class="ph ph-chat-text"></i> WhatsApp</a>
           </div>
         </div>
       </div>`;
@@ -539,18 +539,18 @@ async function reportes() {
         getAccounts().catch(() => []),
       ]);
       const totals  = calcPeriodTotals(txs, DEFAULT_CATS);
-      const balance = accounts.reduce((s, a) => s <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txs), 0);
+      const balance = accounts.reduce((s, a) => s + calcAccountBalance(a, txs), 0);
       return { ...ag, totals, balance, txCount: txs.length };
     } catch { return { ...ag, totals:{ingresos:0,egresos:0,ahorros:0,neto:0}, balance:0, txCount:0 }; }
     finally { ViewingAgent.clear(); }
   }));
 
-  const totalIngresos  = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.totals.ingresos, 0);
-  const totalEgresos   = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.totals.egresos, 0);
-  const totalAhorros   = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.totals.ahorros, 0);
-  const totalPatrimonio = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.balance, 0);
-  const avgScore       = agents.length ? Math.round(Object.values(agentScores).reduce((s,v)=>s<i class="ph ph-plus-circle"></i>v,0)/agents.length) : 0;
-  const totalTxs       = agentData.reduce((s,a) => s<i class="ph ph-plus-circle"></i>a.txCount, 0);
+  const totalIngresos  = agentData.reduce((s,a) => s+a.totals.ingresos, 0);
+  const totalEgresos   = agentData.reduce((s,a) => s+a.totals.egresos, 0);
+  const totalAhorros   = agentData.reduce((s,a) => s+a.totals.ahorros, 0);
+  const totalPatrimonio = agentData.reduce((s,a) => s+a.balance, 0);
+  const avgScore       = agents.length ? Math.round(Object.values(agentScores).reduce((s,v)=>s+v,0)/agents.length) : 0;
+  const totalTxs       = agentData.reduce((s,a) => s+a.txCount, 0);
 
   setContent(`
     <div class="grid-3 mb-3">
@@ -590,7 +590,7 @@ async function reportes() {
                 <td class="text-success">${fmtShort(ag.totals.ingresos)}</td>
                 <td class="text-danger">${fmtShort(ag.totals.egresos)}</td>
                 <td class="text-info">${fmtShort(ag.totals.ahorros)}</td>
-                <td style="color:${ag.totals.neto>=0?'var(--success)':'var(--danger)'}">${ag.totals.neto>=0?'<i class="ph ph-plus-circle"></i>':''}${fmtShort(ag.totals.neto)}</td>
+                <td style="color:${ag.totals.neto>=0?'var(--success)':'var(--danger)'}">${ag.totals.neto>=0?'<<i class="ph ph-plus-circle"></i>':''}${fmtShort(ag.totals.neto)}</td>
                 <td>${ag.txCount}</td>
               </tr>`;
             }).join('')}
@@ -615,7 +615,7 @@ function renderScoresChart(agentData) {
       labels: sorted.map(a => a.name.split(' ')[0]),
       datasets: [{
         data: sorted.map(a => agentScores[a.id]||0),
-        backgroundColor: sorted.map(a => scoreColor(agentScores[a.id]||0)<i class="ph ph-plus-circle"></i>'99'),
+        backgroundColor: sorted.map(a => scoreColor(agentScores[a.id]||0)+'99'),
         borderColor: sorted.map(a => scoreColor(agentScores[a.id]||0)),
         borderWidth: 2, borderRadius: 6, borderSkipped: false
       }]

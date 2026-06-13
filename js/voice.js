@@ -12,8 +12,8 @@ const TYPE_KEYWORDS = {
 
 // Usa word boundary para keywords cortos ("gas" no matchea dentro de "gasto")
 function hasKeyword(text, kw) {
-  const words = kw.split(/\s<i class="ph ph-plus-circle"></i>/);
-  if (words.length === 1) return new RegExp(`\\b${kw.replace(/[.*<i class="ph ph-plus-circle"></i>?^${}()|[\]\\]/g,'\\$&')}\\b`, 'i').test(text);
+  const words = kw.split(/\s+/);
+  if (words.length === 1) return new RegExp(`\\b${kw.replace(/[.*<<i class="ph ph-plus-circle"></i>?^${}()|[\]\\]/g,'\\$&')}\\b`, 'i').test(text);
   return text.toLowerCase().includes(kw);
 }
 
@@ -54,15 +54,15 @@ const NUM_WORDS = {
 
 function wordsToNumber(text) {
   const lower = text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
-  const parts  = lower.split(/\s<i class="ph ph-plus-circle"></i>/);
+  const parts  = lower.split(/\s+/);
   let total = 0, current = 0;
   for (const p of parts) {
     const n = NUM_WORDS[p];
-    if (n === undefined) { const d = parseInt(p); if (!isNaN(d)) current <i class="ph ph-plus-circle"></i>= d; continue; }
-    if (n >= 1000) { total <i class="ph ph-plus-circle"></i>= (current || 1) * n; current = 0; }
-    else current <i class="ph ph-plus-circle"></i>= n;
+    if (n === undefined) { const d = parseInt(p); if (!isNaN(d)) current += d; continue; }
+    if (n >= 1000) { total += (current || 1) * n; current = 0; }
+    else current += n;
   }
-  return total <i class="ph ph-plus-circle"></i> current || null;
+  return total + current || null;
 }
 
 export function parseVoiceInput(transcript) {
@@ -80,9 +80,9 @@ export function parseVoiceInput(transcript) {
     type = "egreso"; typeExplicit = true;
   }
 
-  // Monto: combina dígitos <i class="ph ph-plus-circle"></i> palabras ("120 mil" = 120000)
+  // Monto: combina dígitos + palabras ("120 mil" = 120000)
   let amount = 0;
-  const normalized = transcript.replace(/(\d)\s<i class="ph ph-plus-circle"></i>(?=\d)/g, "$1");
+  const normalized = transcript.replace(/(\d)\s+(?=\d)/g, "$1");
   const numMatch = normalized.match(/(\d[\d.,]*)/);
   if (numMatch) {
     let raw = numMatch[0];
@@ -143,7 +143,7 @@ function openBubble() {
   // Cerrar al tocar fuera (el overlay)
   p.onclick = e => { if (e.target === p) dismissVoiceCard(); };
 
-  // Contenido inicial: barras <i class="ph ph-plus-circle"></i> "escuchando"
+  // Contenido inicial: barras + "escuchando"
   const body = cardBody(); if (!body) return;
   body.innerHTML = `
     <div style="display:flex;gap:5px;align-items:center;justify-content:center;height:44px;margin:8px 0" id="vjs-bars">
@@ -171,7 +171,7 @@ function showResult(parsed) {
   const esInv = parsed.type === "egreso" && cat?.macro === "Ahorro/Inversión";
   const typeLabel = parsed.type === "ingreso" ? "<i class="ph ph-money"></i> Ingreso" : esInv ? "<i class="ph ph-chart-bar"></i> Inversión" : "<i class="ph ph-upload-simple"></i> Gasto";
   const amtFmt = parsed.amount
-    ? "$ " <i class="ph ph-plus-circle"></i> parsed.amount.toLocaleString("es-AR", {minimumFractionDigits:0})
+    ? "$ " + parsed.amount.toLocaleString("es-AR", {minimumFractionDigits:0})
     : "Monto no detectado";
   const amtColor = parsed.amount ? (parsed.type==="ingreso"?"#34d399":"#f87171") : "#f59e0b";
 
@@ -259,10 +259,10 @@ function startRecognition() {
 
   r.onresult = e => {
     let interim = "";
-    for (let i = e.resultIndex; i < e.results.length; i<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>) {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
       if (e.results[i].isFinal) finalText = t;
-      else interim <i class="ph ph-plus-circle"></i>= t;
+      else interim += t;
     }
     resetSilenceTimer();
     const el = document.getElementById("vjs-interim");
@@ -383,7 +383,7 @@ function _wizShowStep() {
   const p = portal(); if (!p) return;
   p.style.display = "flex";
 
-  const progress = `${current <i class="ph ph-plus-circle"></i> 1} / ${steps.length}`;
+  const progress = `${current <<i class="ph ph-plus-circle"></i> 1} / ${steps.length}`;
   const pct = Math.round((current / steps.length) * 100);
 
   cardBody().innerHTML = `
@@ -427,9 +427,9 @@ function _wizStartRec(step) {
   r.onresult = e => {
     clearTimeout(timer);
     let interim = "";
-    for (let i = e.resultIndex; i < e.results.length; i<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>) {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) final = t; else interim <i class="ph ph-plus-circle"></i>= t;
+      if (e.results[i].isFinal) final = t; else interim += t;
     }
     const el = document.getElementById("vjs-interim");
     if (el && !final) el.textContent = `"${interim}"`;
@@ -465,7 +465,7 @@ function _wizParse(step, text) {
   const lower = text.toLowerCase().trim();
   if (step.type === "amount") return wordsToNumber(text) || parseFloat(text.replace(/[^\d.,]/g,'').replace(',','.')) || 0;
   if (step.type === "number") {
-    const n = wordsToNumber(text) || parseInt(text.match(/\d<i class="ph ph-plus-circle"></i>/)?.[0]);
+    const n = wordsToNumber(text) || parseInt(text.match(/\d+/)?.[0]);
     return isNaN(n) ? null : n;
   }
   if (step.type === "option" && step.options) {
@@ -476,7 +476,7 @@ function _wizParse(step, text) {
 }
 
 function _wizDisplay(step, value) {
-  if (step.type === "amount") return "$ " <i class="ph ph-plus-circle"></i> (value||0).toLocaleString("es-AR");
+  if (step.type === "amount") return "$ " + (value||0).toLocaleString("es-AR");
   if (step.type === "option" && step.options) {
     const opt = step.options.find(o => o.value === value);
     return opt ? opt.label : value;
@@ -499,11 +499,11 @@ function _wizNoSpeech() {
 window._wizAccept = () => {
   const { field } = window._wizPendingStep;
   _wiz.data[field] = window._wizPendingValue;
-  _wiz.current<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>;
+  _wiz.current++;
   if (_wiz.current >= _wiz.steps.length) _wizFinish();
   else _wizShowStep();
 };
-window._wizSkip   = () => { _wiz.current<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>; if (_wiz.current >= _wiz.steps.length) _wizFinish(); else _wizShowStep(); };
+window._wizSkip   = () => { _wiz.current++; if (_wiz.current >= _wiz.steps.length) _wizFinish(); else _wizShowStep(); };
 window._wizRetry  = () => _wizShowStep();
 window._wizCancel = () => { _wiz = null; dismissVoiceCard(); };
 

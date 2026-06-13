@@ -155,7 +155,7 @@ async function renderInicio() {
     getGoals(),
   ]);
 
-  const totalBal = accounts.reduce((s, a) => s <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txsAll), 0);
+  const totalBal = accounts.reduce((s, a) => s + calcAccountBalance(a, txsAll), 0);
   const now      = new Date();
 
   let periodTxs, periodData, periodLabel;
@@ -170,7 +170,7 @@ async function renderInicio() {
   } else {
     periodTxs  = txsAll.filter(t => t.date.startsWith(yearKey()));
     periodData = calcPeriodTotals(periodTxs, DEFAULT_CATS);
-    periodLabel = 'Año ' <i class="ph ph-plus-circle"></i> now.getFullYear();
+    periodLabel = 'Año ' + now.getFullYear();
   }
 
   const emGoal = goals.find(g => g.type === 'emergency_fund');
@@ -184,9 +184,9 @@ async function renderInicio() {
       <div class="hero-amount">${fmt(totalBal, settings.currency)}</div>
       <div class="hero-sub">${accounts.length} cuenta(s) · ${periodLabel}</div>
       <div class="hero-row">
-        <div class="hero-stat"><div class="hero-stat-val text-success"><i class="ph ph-plus-circle"></i>${fmtShort(periodData.ingresos)}</div><div class="hero-stat-label">Ingresos</div></div>
+        <div class="hero-stat"><div class="hero-stat-val text-success">+${fmtShort(periodData.ingresos)}</div><div class="hero-stat-label">Ingresos</div></div>
         <div class="hero-stat"><div class="hero-stat-val text-danger">-${fmtShort(periodData.egresos)}</div><div class="hero-stat-label">Gastos</div></div>
-        <div class="hero-stat"><div class="hero-stat-val" style="color:${netoColor}">${periodData.neto>=0?'<i class="ph ph-plus-circle"></i>':''}${fmtShort(periodData.neto)}</div><div class="hero-stat-label">Neto</div></div>
+        <div class="hero-stat"><div class="hero-stat-val" style="color:${netoColor}">${periodData.neto>=0?'<<i class="ph ph-plus-circle"></i>':''}${fmtShort(periodData.neto)}</div><div class="hero-stat-label">Neto</div></div>
       </div>
     </div>
 
@@ -209,8 +209,8 @@ async function renderInicio() {
     </div></div>` : ''}
 
     <div class="quick-actions mb-3">
-      <button class="qa-btn qa-ingreso" onclick="openNewTx('ingreso')"><span style="font-size:1.2rem"><i class="ph ph-money"></i></span><i class="ph ph-plus-circle"></i> Ingreso</button>
-      <button class="qa-btn qa-egreso" onclick="openNewTx('egreso')"><span style="font-size:1.2rem"><i class="ph ph-upload-simple"></i></span><i class="ph ph-plus-circle"></i> Gasto</button>
+      <button class="qa-btn qa-ingreso" onclick="openNewTx('ingreso')"><span style="font-size:1.2rem"><i class="ph ph-money"></i></span>+ Ingreso</button>
+      <button class="qa-btn qa-egreso" onclick="openNewTx('egreso')"><span style="font-size:1.2rem"><i class="ph ph-upload-simple"></i></span>+ Gasto</button>
       <button class="qa-btn qa-traslado" onclick="openNewTx('traslado')"><i class="ph ph-arrows-clockwise"></i> Transferir entre cuentas</button>
     </div>
 
@@ -242,7 +242,7 @@ window.setPeriod = (p) => { homePeriod = p; renderInicio(); };
 // ════════════════════════════════════════════════
 async function renderMovimientos() {
   document.getElementById('topbar-action').innerHTML =
-    `<button class="btn btn-primary btn-sm" onclick="openNewTx()"><i class="ph ph-plus-circle"></i> Nuevo</button>`;
+    `<button class="btn btn-primary btn-sm" onclick="openNewTx()"><<i class="ph ph-plus-circle"></i> Nuevo</button>`;
 
   const ym   = monthKey();
   const txs  = await getMonthTransactions(ym);
@@ -274,7 +274,7 @@ window.reloadMovimientos = async (ym) => {
 
 function txSummaryKPIs(txs) {
   let ing = 0, eg = 0;
-  txs.forEach(t => { if(t.type==='ingreso') ing<i class="ph ph-plus-circle"></i>=t.amount; else if(t.type==='egreso') eg<i class="ph ph-plus-circle"></i>=t.amount; });
+  txs.forEach(t => { if(t.type==='ingreso') ing+=t.amount; else if(t.type==='egreso') eg+=t.amount; });
   return `<div class="grid-2" style="gap:8px">
     <div class="kpi green" style="padding:10px"><div class="kpi-label">Ingresos</div><div class="kpi-value" style="font-size:1.1rem">${fmt(ing)}</div></div>
     <div class="kpi red" style="padding:10px"><div class="kpi-label">Gastos</div><div class="kpi-value" style="font-size:1.1rem">${fmt(eg)}</div></div>
@@ -286,10 +286,10 @@ function txSummaryKPIs(txs) {
 // ════════════════════════════════════════════════
 async function renderCuentas() {
   document.getElementById('topbar-action').innerHTML =
-    `<button class="btn btn-primary btn-sm" onclick="openNewAccount()"><i class="ph ph-plus-circle"></i> Cuenta</button>`;
+    `<button class="btn btn-primary btn-sm" onclick="openNewAccount()"><<i class="ph ph-plus-circle"></i> Cuenta</button>`;
 
   const [accounts, txsAll] = await Promise.all([getAccounts(), getTransactions()]);
-  const total = accounts.reduce((s,a) => s <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txsAll), 0);
+  const total = accounts.reduce((s,a) => s + calcAccountBalance(a, txsAll), 0);
 
   setContent(`
     <div class="hero mb-3" style="background:linear-gradient(135deg,#134e4a,#0f766e)">
@@ -351,9 +351,9 @@ async function renderPresupuesto() {
   const rows = {Necesidades:[],  'Estilo de vida':[], 'Ahorro/Inversión':[], Deuda:[], Varios:[]};
   Object.entries(catTot).forEach(([cid,amt])=>{
     const cat = DEFAULT_CATS.find(c=>c.id===cid); if(!cat) return;
-    if(cat.macro==='Necesidades') needsSpent<i class="ph ph-plus-circle"></i>=amt;
-    else if(cat.macro==='Estilo de vida') wantsSpent<i class="ph ph-plus-circle"></i>=amt;
-    else if(cat.macro==='Ahorro/Inversión') savSpent<i class="ph ph-plus-circle"></i>=amt;
+    if(cat.macro==='Necesidades') needsSpent+=amt;
+    else if(cat.macro==='Estilo de vida') wantsSpent+=amt;
+    else if(cat.macro==='Ahorro/Inversión') savSpent+=amt;
     if(rows[cat.macro]) rows[cat.macro].push({cat,amt});
     else rows['Varios'].push({cat,amt});
   });
@@ -416,13 +416,13 @@ async function renderObjetivos() {
         <div class="flex justify-between fs-xs text-2 mt-2"><span>${emPct.toFixed(1)}%</span><span>Falta ${fmt(Math.max(0,emGoal.targetAmount-emGoal.currentAmount))}</span></div>
         ${emPct>=100?`<div class="alert alert-success mt-3 fs-sm"><i class="ph ph-check-circle"></i> ¡Completado! Mantené este dinero en cuenta remunerada o FCI money market.</div>`:
         `<div class="alert alert-warning mt-3 fs-sm"><i class="ph ph-warning-circle"></i> Este fondo debe estar en activos <strong>líquidos</strong>.</div>`}
-        <button class="btn btn-success btn-block mt-3" onclick="addToEmFund('${emGoal.id}',${emGoal.currentAmount})"><i class="ph ph-plus-circle"></i> Agregar fondos</button>
+        <button class="btn btn-success btn-block mt-3" onclick="addToEmFund('${emGoal.id}',${emGoal.currentAmount})">+ Agregar fondos</button>
       ` : `
         <div class="empty-state"><div class="es-icon"><i class="ph ph-shield-check"></i></div>
           <button class="btn btn-primary mt-3" onclick="openEmFund()">Configurar ahora</button></div>`}
     </div>
     <div class="card mb-3">
-      <div class="card-header"><span class="card-title">Otros objetivos</span><button class="btn btn-ghost btn-sm" onclick="openNewGoal()"><i class="ph ph-plus-circle"></i> Agregar</button></div>
+      <div class="card-header"><span class="card-title">Otros objetivos</span><button class="btn btn-ghost btn-sm" onclick="openNewGoal()">+ Agregar</button></div>
       ${goals.filter(g=>g.type!=='emergency_fund').map(g=>{
         const pct=Math.min(100,(g.currentAmount/g.targetAmount)*100);
         return `<div class="mb-3">
@@ -454,7 +454,7 @@ window.submitEmFund = async (e) => {
 };
 window.addToEmFund = async (id, current) => {
   const amt=parseFloat(prompt(`¿Cuánto agregás? (Actual: ${fmt(current)})`));
-  if(!isNaN(amt)&&amt>0){ await saveGoal({id, currentAmount:current<i class="ph ph-plus-circle"></i>amt}); renderObjetivos(); }
+  if(!isNaN(amt)&&amt>0){ await saveGoal({id, currentAmount:current+amt}); renderObjetivos(); }
 };
 window.openNewGoal = () => {
   showGenericModal('<i class="ph ph-crosshair"></i> Nuevo objetivo', `
@@ -569,9 +569,9 @@ window.calcCompound = (e) => {
   const r  = parseFloat(fd.get('rate')||12) / 100 / 12;
   const Y  = parseInt(fd.get('years')||30);
   const n  = Y * 12;
-  const compound   = C * Math.pow(1<i class="ph ph-plus-circle"></i>r,n) <i class="ph ph-plus-circle"></i> M * ((Math.pow(1<i class="ph ph-plus-circle"></i>r,n)-1)/r);
-  const simple     = C <i class="ph ph-plus-circle"></i> C*(r*12)*Y <i class="ph ph-plus-circle"></i> M*n;
-  const aportado   = C <i class="ph ph-plus-circle"></i> M*n;
+  const compound   = C * Math.pow(1+r,n) + M * ((Math.pow(1+r,n)-1)/r);
+  const simple     = C + C*(r*12)*Y + M*n;
+  const aportado   = C + M*n;
 
   document.getElementById('compound-result').innerHTML = `
     <div class="grid-2" style="gap:8px">
@@ -585,12 +585,12 @@ window.calcCompound = (e) => {
   const ctx = document.getElementById('chart-compound');
   if (!ctx) return;
   const labels=[], comp=[], simp=[], contrib=[];
-  for (let yr=0; yr<=Y; yr<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>) {
+  for (let yr=0; yr<=Y; yr++) {
     const nn = yr*12;
-    labels.push(yr<i class="ph ph-plus-circle"></i>'a');
-    comp.push(<i class="ph ph-plus-circle"></i>(C*Math.pow(1<i class="ph ph-plus-circle"></i>r,nn)<i class="ph ph-plus-circle"></i>M*((Math.pow(1<i class="ph ph-plus-circle"></i>r,nn)-1)/r)).toFixed(0));
-    simp.push(<i class="ph ph-plus-circle"></i>(C<i class="ph ph-plus-circle"></i>C*(r*12)*yr<i class="ph ph-plus-circle"></i>M*nn).toFixed(0));
-    contrib.push(C<i class="ph ph-plus-circle"></i>M*nn);
+    labels.push(yr+'a');
+    comp.push(+(C*Math.pow(1+r,nn)+M*((Math.pow(1+r,nn)-1)/r)).toFixed(0));
+    simp.push(+(C+C*(r*12)*yr+M*nn).toFixed(0));
+    contrib.push(C+M*nn);
   }
   activeCharts.compound = new Chart(ctx, {
     type:'line',
@@ -627,7 +627,7 @@ window.calcInflation = (e) => {
   const A   = parseFloat(fd.get('amount'));
   const inf = parseFloat(fd.get('inflation')) / 100;
   const Y   = parseInt(fd.get('years'));
-  const fv  = A / Math.pow(1<i class="ph ph-plus-circle"></i>inf, Y);
+  const fv  = A / Math.pow(1+inf, Y);
   document.getElementById('inflation-result').innerHTML = `
     <div class="alert alert-danger">En ${Y} años, ${fmtShort(A)} de hoy valen <strong>${fmtShort(fv)}</strong> en poder de compra. Pérdida real: <strong>${fmtShort(A-fv)}</strong> (${((1-fv/A)*100).toFixed(1)}%)</div>
     <div class="alert alert-success"><i class="ph ph-lightbulb"></i> En una cuenta remunerada al ritmo de la inflación mantenés el valor real.</div>`;
@@ -638,12 +638,12 @@ window.calcInflation = (e) => {
 // ════════════════════════════════════════════════
 async function renderCredito() {
   document.getElementById('topbar-action').innerHTML =
-    `<button class="btn btn-primary btn-sm" onclick="openNewCard()"><i class="ph ph-plus-circle"></i> Tarjeta</button>`;
+    `<button class="btn btn-primary btn-sm" onclick="openNewCard()"><<i class="ph ph-plus-circle"></i> Tarjeta</button>`;
 
   const cards = await getCards();
 
-  const totalDeuda   = cards.reduce((s,c) => s<i class="ph ph-plus-circle"></i>(c.balance||0), 0);
-  const totalLimite  = cards.reduce((s,c) => s<i class="ph ph-plus-circle"></i>(c.limit||0), 0);
+  const totalDeuda   = cards.reduce((s,c) => s+(c.balance||0), 0);
+  const totalLimite  = cards.reduce((s,c) => s+(c.limit||0), 0);
   const utilizacion  = totalLimite ? (totalDeuda/totalLimite*100) : 0;
 
   setContent(`
@@ -656,7 +656,7 @@ async function renderCredito() {
     <div class="card mb-3">
       <div class="card-header">
         <span class="card-title"><i class="ph ph-credit-card"></i> Mis tarjetas</span>
-        <button class="btn btn-ghost btn-sm" onclick="openNewCard()"><i class="ph ph-plus-circle"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="openNewCard()">+</button>
       </div>
       ${!cards.length
         ? `<div class="empty-state"><div class="es-icon"><i class="ph ph-credit-card"></i></div><button class="btn btn-primary mt-3" onclick="openNewCard()">Agregar tarjeta</button></div>`
@@ -668,10 +668,10 @@ async function renderCredito() {
       <div class="alert alert-info mb-3">Comprando el día <strong>después del cierre</strong>, tenés hasta ~50 días para pagar sin interés. <strong>NUNCA pagar el mínimo</strong> — puede costarte 3× el monto original.</div>
       ${cards.map(c => {
         const now = new Date();
-        const daysTocut = ((c.cutDate - now.getDate() <i class="ph ph-plus-circle"></i> 31) % 31) || 31;
-        const window50  = daysTocut <i class="ph ph-plus-circle"></i> (c.payDate > c.cutDate ? c.payDate - c.cutDate : 30 <i class="ph ph-plus-circle"></i> c.payDate - c.cutDate);
+        const daysTocut = ((c.cutDate - now.getDate() + 31) % 31) || 31;
+        const window50  = daysTocut + (c.payDate > c.cutDate ? c.payDate - c.cutDate : 30 + c.payDate - c.cutDate);
         const nextCut   = new Date(); nextCut.setDate(c.cutDate);
-        if (nextCut < now) nextCut.setMonth(nextCut.getMonth()<i class="ph ph-plus-circle"></i>1);
+        if (nextCut < now) nextCut.setMonth(nextCut.getMonth()+1);
         return `
         <div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin-bottom:8px">
           <div class="flex justify-between items-center">
@@ -797,13 +797,13 @@ window.calcLeverage = (e) => {
   const years = parseInt(fd.get('years'));
   const yld   = parseFloat(fd.get('yield'))/100;
   const loan  = price*(1-down); const n=years*12;
-  const monthly = loan*(rate*Math.pow(1<i class="ph ph-plus-circle"></i>rate,n))/(Math.pow(1<i class="ph ph-plus-circle"></i>rate,n)-1);
+  const monthly = loan*(rate*Math.pow(1+rate,n))/(Math.pow(1+rate,n)-1);
   const cashflow = price*yld/12 - monthly;
   const totalInterest = monthly*n - loan;
   document.getElementById('lev-result').innerHTML = `
     <div class="grid-2 mb-2" style="gap:8px">
       <div class="kpi" style="padding:12px"><div class="kpi-label">Cuota mensual</div><div class="kpi-value" style="font-size:1.1rem">${fmt(monthly)}</div></div>
-      <div class="kpi ${cashflow>=0?'green':'red'}" style="padding:12px"><div class="kpi-label">Flujo mensual</div><div class="kpi-value" style="font-size:1.1rem">${cashflow>=0?'<i class="ph ph-plus-circle"></i>':''}${fmt(cashflow)}</div></div>
+      <div class="kpi ${cashflow>=0?'green':'red'}" style="padding:12px"><div class="kpi-label">Flujo mensual</div><div class="kpi-value" style="font-size:1.1rem">${cashflow>=0?'<<i class="ph ph-plus-circle"></i>':''}${fmt(cashflow)}</div></div>
     </div>
     <div class="alert ${cashflow>=0?'alert-success':'alert-warning'} fs-sm">
       Total intereses pagados: <strong>${fmtShort(totalInterest)}</strong><br>
@@ -851,14 +851,14 @@ async function renderReportes() {
   const macro = {};
   Object.entries(catTotals).forEach(([cid,amt]) => {
     const cat = DEFAULT_CATS.find(c=>c.id===cid);
-    if (cat) macro[cat.macro] = (macro[cat.macro]||0) <i class="ph ph-plus-circle"></i> amt;
+    if (cat) macro[cat.macro] = (macro[cat.macro]||0) + amt;
   });
 
   setContent(`
     <div class="grid-2 mb-3">
       <div class="kpi ${variation<=0?'green':'red'}" style="padding:14px">
         <div class="kpi-label">Variación vs mes anterior</div>
-        <div class="kpi-value">${variation>=0?'<i class="ph ph-plus-circle"></i>':''}${variation.toFixed(1)}%</div>
+        <div class="kpi-value">${variation>=0?'<<i class="ph ph-plus-circle"></i>':''}${variation.toFixed(1)}%</div>
         <div class="kpi-sub">${variation>10?'<i class="ph ph-warning-circle"></i> Aumento inusual':variation<-10?'<i class="ph ph-check-circle"></i> Bajaste gastos':variation===0?'Sin cambios':'Normal'}</div>
       </div>
       <div class="kpi blue" style="padding:14px">
@@ -889,7 +889,7 @@ async function renderReportes() {
       ${top10.length ? top10.map((x,i) => {
         const pct = (x.v / top10[0].v * 100).toFixed(0);
         return `<div class="flex items-center gap-2 mb-3">
-          <span class="fs-xs text-3" style="width:18px">#${i<i class="ph ph-plus-circle"></i>1}</span>
+          <span class="fs-xs text-3" style="width:18px">#${i+1}</span>
           <span style="width:20px">${x.cat.icon}</span>
           <span class="fs-sm" style="flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${x.cat.name}</span>
           <div style="width:80px;height:6px;background:var(--surface2);border-radius:3px;flex-shrink:0">
@@ -941,7 +941,7 @@ function renderMacroChart(macro) {
 
 function renderSavingChart(months, totals) {
   const ctx = document.getElementById('chart-saving'); if (!ctx) return;
-  const rates = totals.map(t => t.ingresos ? <i class="ph ph-plus-circle"></i>(t.ahorros/t.ingresos*100).toFixed(1) : 0);
+  const rates = totals.map(t => t.ingresos ? +(t.ahorros/t.ingresos*100).toFixed(1) : 0);
   activeCharts.saving = new Chart(ctx, {
     type:'line',
     data:{ labels:months.map(m=>m.label), datasets:[
@@ -954,7 +954,7 @@ function renderSavingChart(months, totals) {
       plugins:{legend:{labels:{color:'#94a3b8',font:{size:10}}}},
       scales:{
         x:{ticks:{color:'#64748b',font:{size:10}},grid:{display:false}},
-        y:{min:0,ticks:{color:'#64748b',font:{size:10},callback:v=>v<i class="ph ph-plus-circle"></i>'%'},grid:{color:'#33415566'}}
+        y:{min:0,ticks:{color:'#64748b',font:{size:10},callback:v=>v+'%'},grid:{color:'#33415566'}}
       }
     }
   });
@@ -1028,7 +1028,7 @@ window.exportData = async () => {
 window.openNewTx = async (type='egreso', prefill=null) => {
   txState = { type, psychFilter: prefill?.psychFilter||null, cooldownHours: 0 };
   document.getElementById('modal-tx-title').textContent =
-    {ingreso:'<i class="ph ph-plus-circle"></i> Ingreso', egreso:'- Gasto', traslado:'⇄ Transferencia'}[type] || 'Transacción';
+    {ingreso:'<<i class="ph ph-plus-circle"></i> Ingreso', egreso:'- Gasto', traslado:'⇄ Transferencia'}[type] || 'Transacción';
   await renderTxForm(prefill);
   openModal('modal-tx');
 };
@@ -1089,7 +1089,7 @@ async function renderTxForm(prefill=null) {
     </form>`;
 }
 
-window.changeTxType = (t) => { txState.type=t; txState.psychFilter=null; txState.cooldownHours=0; renderTxForm(); document.getElementById('modal-tx-title').textContent={ingreso:'<i class="ph ph-plus-circle"></i> Ingreso',egreso:'- Gasto',traslado:'⇄ Transferencia'}[t]; };
+window.changeTxType = (t) => { txState.type=t; txState.psychFilter=null; txState.cooldownHours=0; renderTxForm(); document.getElementById('modal-tx-title').textContent={ingreso:'<<i class="ph ph-plus-circle"></i> Ingreso',egreso:'- Gasto',traslado:'⇄ Transferencia'}[t]; };
 window.setPsych = (v) => { txState.psychFilter=v; if(v!=='capricho') txState.cooldownHours=0; renderTxForm(); };
 window.setCooldown = (h) => { txState.cooldownHours=h; renderTxForm(); };
 
@@ -1097,7 +1097,7 @@ window.submitTx = async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
   const cooldownUntil = txState.cooldownHours > 0
-    ? new Date(Date.now() <i class="ph ph-plus-circle"></i> txState.cooldownHours * 3_600_000).toISOString() : null;
+    ? new Date(Date.now() + txState.cooldownHours * 3_600_000).toISOString() : null;
   await addTransaction({
     date: fd.get('date') || today(), type: txState.type,
     amount: parseFloat(fd.get('amount')), description: fd.get('description'),
@@ -1141,7 +1141,7 @@ window.editVoiceTx = async () => {
 // TX LIST
 // ════════════════════════════════════════════════
 function renderTxList(txs) {
-  if (!txs?.length) return `<div class="empty-state"><div class="es-icon"><i class="ph ph-clipboard-text"></i></div>Sin movimientos<br><button class="btn btn-primary mt-3" onclick="openNewTx('egreso')"><i class="ph ph-plus-circle"></i> Registrar</button></div>`;
+  if (!txs?.length) return `<div class="empty-state"><div class="es-icon"><i class="ph ph-clipboard-text"></i></div>Sin movimientos<br><button class="btn btn-primary mt-3" onclick="openNewTx('egreso')"><<i class="ph ph-plus-circle"></i> Registrar</button></div>`;
   const groups = {};
   txs.forEach(t => { (groups[t.date]||=[]).push(t); });
   return Object.entries(groups).sort((a,b)=>b[0].localeCompare(a[0])).map(([date,items])=>`
@@ -1153,10 +1153,10 @@ function renderTxList(txs) {
         <div class="tx-icon ${t.type==='ingreso'?'ing':isTr?'tr':'eg'}">${cat?.icon||isTr?'<i class="ph ph-arrows-clockwise"></i>':'<i class="ph ph-package"></i>'}</div>
         <div class="tx-info">
           <div class="tx-name">${t.description||(cat?.name||'Sin descripción')}</div>
-          <div class="tx-cat">${isTr?'Traslado':(cat?.macro||'—')} ${t.psychFilter?'· '<i class="ph ph-plus-circle"></i>{necesidad:'<i class="ph ph-check-circle"></i>',gusto:'<i class="ph ph-thumbs-up"></i>',capricho:'<i class="ph ph-warning-circle"></i>'}[t.psychFilter]:''}</div>
+          <div class="tx-cat">${isTr?'Traslado':(cat?.macro||'—')} ${t.psychFilter?'· '+{necesidad:'<i class="ph ph-check-circle"></i>',gusto:'<i class="ph ph-thumbs-up"></i>',capricho:'<i class="ph ph-warning-circle"></i>'}[t.psychFilter]:''}</div>
         </div>
         <div class="tx-amount" style="color:${t.type==='ingreso'?'var(--success)':isTr?'var(--info)':'var(--danger)'}">
-          ${t.type==='ingreso'?'<i class="ph ph-plus-circle"></i>':isTr?'⇄':'-'}${fmt(t.amount)}
+          ${t.type==='ingreso'?'<<i class="ph ph-plus-circle"></i>':isTr?'⇄':'-'}${fmt(t.amount)}
         </div>
       </div>`;
     }).join('')}`).join('');
@@ -1169,10 +1169,10 @@ window.showTxDetail = async (id) => {
   showGenericModal('Detalle', `
     <div class="text-center mb-4">
       <div style="font-size:2rem">${cat?.icon||'<i class="ph ph-package"></i>'}</div>
-      <div class="fw-800 fs-lg mt-2" style="color:${t.type==='ingreso'?'var(--success)':'var(--danger)'}">${t.type==='ingreso'?'<i class="ph ph-plus-circle"></i>':'-'}${fmt(t.amount)}</div>
+      <div class="fw-800 fs-lg mt-2" style="color:${t.type==='ingreso'?'var(--success)':'var(--danger)'}">${t.type==='ingreso'?'<<i class="ph ph-plus-circle"></i>':'-'}${fmt(t.amount)}</div>
     </div>
     <div style="background:var(--surface2);border-radius:var(--r-sm);padding:14px;margin-bottom:14px">
-      ${[['Descripción',t.description||'—'],['Categoría',cat?cat.icon<i class="ph ph-plus-circle"></i>' '<i class="ph ph-plus-circle"></i>cat.name:'—'],['Tipo',t.type],['Fecha',fmtDateFull(t.date)]].map(([l,v])=>`<div class="flex justify-between fs-sm mb-2"><span class="text-2">${l}</span><span class="fw-bold">${v}</span></div>`).join('')}
+      ${[['Descripción',t.description||'—'],['Categoría',cat?cat.icon+' '+cat.name:'—'],['Tipo',t.type],['Fecha',fmtDateFull(t.date)]].map(([l,v])=>`<div class="flex justify-between fs-sm mb-2"><span class="text-2">${l}</span><span class="fw-bold">${v}</span></div>`).join('')}
     </div>
     <button class="btn btn-danger btn-block" onclick="deleteTxFromDetail('${t.id}')"><i class="ph ph-trash"></i> Eliminar</button>`);
 };
@@ -1212,10 +1212,10 @@ window.handleLogout = async () => { await logout(); };
 
 function getMonthOptions(selected = monthKey()) {
   let o = '';
-  for (let i=0;i<13;i<i class="ph ph-plus-circle"></i><i class="ph ph-plus-circle"></i>) {
+  for (let i=0;i<13;i++) {
     const d=new Date(); d.setMonth(d.getMonth()-i);
     const ym=monthKey(d);
-    o<i class="ph ph-plus-circle"></i>=`<option value="${ym}" ${ym===selected?'selected':''}>${d.toLocaleDateString('es-AR',{month:'long',year:'numeric'})}</option>`;
+    o+=`<option value="${ym}" ${ym===selected?'selected':''}>${d.toLocaleDateString('es-AR',{month:'long',year:'numeric'})}</option>`;
   }
   return o;
 }

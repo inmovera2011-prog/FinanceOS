@@ -97,20 +97,20 @@ export function yearKey(d = new Date()) {
   return (typeof d === 'string' ? d : d.toISOString()).slice(0,4);
 }
 export function fmtDate(d) {
-  return new Date(d<i class="ph ph-plus-circle"></i>'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+  return new Date(d+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'});
 }
 export function fmtDateFull(d) {
-  return new Date(d<i class="ph ph-plus-circle"></i>'T12:00:00').toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
+  return new Date(d+'T12:00:00').toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
 }
 export function fmt(n, currency='ARS') {
   const sym = currency === 'USD' ? 'U$S ' : '$ ';
-  return sym <i class="ph ph-plus-circle"></i> Math.abs(n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return sym + Math.abs(n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 export function fmtShort(n, currency='ARS') {
   const sym = currency === 'USD' ? 'U$S ' : '$ ';
-  if (Math.abs(n) >= 1_000_000) return sym<i class="ph ph-plus-circle"></i>(Math.abs(n)/1_000_000).toFixed(1)<i class="ph ph-plus-circle"></i>'M';
-  if (Math.abs(n) >= 1_000)     return sym<i class="ph ph-plus-circle"></i>(Math.abs(n)/1_000).toFixed(0)<i class="ph ph-plus-circle"></i>'K';
-  return sym<i class="ph ph-plus-circle"></i>Math.abs(n||0).toFixed(0);
+  if (Math.abs(n) >= 1_000_000) return sym+(Math.abs(n)/1_000_000).toFixed(1)+'M';
+  if (Math.abs(n) >= 1_000)     return sym+(Math.abs(n)/1_000).toFixed(0)+'K';
+  return sym+Math.abs(n||0).toFixed(0);
 }
 export function scoreColor(s){ return s>=70?'var(--success)':s>=40?'var(--warning)':'var(--danger)'; }
 export function scoreLabel(s){ return s>=70?'Saludable <i class="ph ph-heart"></i>':s>=40?'Atención <i class="ph ph-warning-circle"></i>':'Crítico <i class="ph ph-circle"></i>'; }

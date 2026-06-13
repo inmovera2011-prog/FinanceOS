@@ -165,7 +165,7 @@ function userRow(u) {
 // ═══════════════════════════════════════════════
 async function usuarios() {
   document.getElementById('topbar-action').innerHTML =
-    `<button class="btn btn-primary btn-sm" onclick="navigate('invitar')"><i class="ph ph-plus-circle"></i> Invitar</button>`;
+    `<button class="btn btn-primary btn-sm" onclick="navigate('invitar')"><<i class="ph ph-plus-circle"></i> Invitar</button>`;
 
   setContent(`
     <div class="card">
@@ -230,7 +230,7 @@ window.viewUserDetail = async (id) => {
   ]);
   ViewingUser.clear();
   const totals  = calcPeriodTotals(txs, DEFAULT_CATS);
-  const balance = accounts.reduce((sum, a) => sum <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txs), 0);
+  const balance = accounts.reduce((sum, a) => sum + calcAccountBalance(a, txs), 0);
   const emGoal  = goals.find(g => g.type === 'emergency_fund');
   const emPct   = emGoal ? Math.min(100, emGoal.currentAmount / emGoal.targetAmount * 100) : 0;
 
@@ -246,7 +246,7 @@ window.viewUserDetail = async (id) => {
       <div class="kpi green" style="padding:12px"><div class="kpi-label">Ingresos mes</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totals.ingresos)}</div></div>
       <div class="kpi red" style="padding:12px"><div class="kpi-label">Gastos mes</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(totals.egresos)}</div></div>
       <div class="kpi blue" style="padding:12px"><div class="kpi-label">Patrimonio</div><div class="kpi-value" style="font-size:1.1rem">${fmtShort(balance)}</div></div>
-      <div class="kpi ${totals.neto>=0?'purple':'amber'}" style="padding:12px"><div class="kpi-label">Neto mes</div><div class="kpi-value" style="font-size:1.1rem">${totals.neto>=0?'<i class="ph ph-plus-circle"></i>':''}${fmtShort(totals.neto)}</div></div>
+      <div class="kpi ${totals.neto>=0?'purple':'amber'}" style="padding:12px"><div class="kpi-label">Neto mes</div><div class="kpi-value" style="font-size:1.1rem">${totals.neto>=0?'<<i class="ph ph-plus-circle"></i>':''}${fmtShort(totals.neto)}</div></div>
     </div>
     ${emGoal ? `<div class="card mb-3" style="padding:12px">
       <div class="card-title"><i class="ph ph-shield-check"></i> Fondo de Emergencia</div>
@@ -318,7 +318,7 @@ async function invitar() {
       <div style="background:var(--surface2);border-radius:var(--r-sm);padding:14px;word-break:break-all;font-size:.78rem;font-family:monospace;margin-bottom:12px" id="reg-link">${window.location.origin}${getBase()}</div>
       <div class="flex gap-2">
         <button class="btn btn-primary" onclick="copyRegLink()"><i class="ph ph-clipboard-text"></i> Copiar link</button>
-        <a href="https://wa.me/?text=${encodeURIComponent('Unite a FinanceOS: ' <i class="ph ph-plus-circle"></i> window.location.origin <i class="ph ph-plus-circle"></i> getBase())}" target="_blank" class="btn btn-ghost"><i class="ph ph-chat-text"></i> WhatsApp</a>
+        <a href="https://wa.me/?text=${encodeURIComponent('Unite a FinanceOS: ' <<i class="ph ph-plus-circle"></i> window.location.origin <<i class="ph ph-plus-circle"></i> getBase())}" target="_blank" class="btn btn-ghost"><i class="ph ph-chat-text"></i> WhatsApp</a>
       </div>
       <hr>
       <div class="card-title mb-3">Gestionar habilidades a usuarios existentes</div>
@@ -337,7 +337,7 @@ function getBase() {
 }
 
 window.copyRegLink = () => {
-  navigator.clipboard.writeText(window.location.origin <i class="ph ph-plus-circle"></i> getBase())
+  navigator.clipboard.writeText(window.location.origin + getBase())
     .then(() => { const el=document.querySelector('[onclick="copyRegLink()"]'); if(el){el.textContent='✓ Copiado!';setTimeout(()=>el.textContent='<i class="ph ph-clipboard-text"></i> Copiar link',2000);} });
 };
 
@@ -450,18 +450,18 @@ async function reportes() {
         getAccounts().catch(() => []),
       ]);
       const totals  = calcPeriodTotals(txs, DEFAULT_CATS);
-      const balance = accounts.reduce((s, a) => s <i class="ph ph-plus-circle"></i> calcAccountBalance(a, txs), 0);
+      const balance = accounts.reduce((s, a) => s + calcAccountBalance(a, txs), 0);
       return { ...u, totals, balance, txCount: txs.length };
     } catch { return { ...u, totals:{ingresos:0,egresos:0,ahorros:0,neto:0}, balance:0, txCount:0 }; }
     finally { ViewingUser.clear(); }
   }));
 
-  const totIng  = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.totals.ingresos,0);
-  const totEg   = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.totals.egresos,0);
-  const totSav  = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.totals.ahorros,0);
-  const totBal  = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.balance,0);
-  const avgScore= users.length ? Math.round(Object.values(userScores).reduce((s,v)=>s<i class="ph ph-plus-circle"></i>v,0)/users.length) : 0;
-  const totTx   = userData.reduce((s,u)=>s<i class="ph ph-plus-circle"></i>u.txCount,0);
+  const totIng  = userData.reduce((s,u)=>s+u.totals.ingresos,0);
+  const totEg   = userData.reduce((s,u)=>s+u.totals.egresos,0);
+  const totSav  = userData.reduce((s,u)=>s+u.totals.ahorros,0);
+  const totBal  = userData.reduce((s,u)=>s+u.balance,0);
+  const avgScore= users.length ? Math.round(Object.values(userScores).reduce((s,v)=>s+v,0)/users.length) : 0;
+  const totTx   = userData.reduce((s,u)=>s+u.txCount,0);
 
   setContent(`
     <div class="grid-3 mb-3">
@@ -489,7 +489,7 @@ async function reportes() {
                 <td><span style="font-weight:900;color:${scoreColor(s)}">${s}</span></td>
                 <td class="text-success">${fmtShort(u.totals.ingresos)}</td>
                 <td class="text-danger">${fmtShort(u.totals.egresos)}</td>
-                <td style="color:${u.totals.neto>=0?'var(--success)':'var(--danger)'}">${u.totals.neto>=0?'<i class="ph ph-plus-circle"></i>':''}${fmtShort(u.totals.neto)}</td>
+                <td style="color:${u.totals.neto>=0?'var(--success)':'var(--danger)'}">${u.totals.neto>=0?'<<i class="ph ph-plus-circle"></i>':''}${fmtShort(u.totals.neto)}</td>
                 <td>${u.txCount}</td>
               </tr>`;
             }).join('')}
@@ -505,7 +505,7 @@ async function reportes() {
     if (ctx1) activeCharts.scores = new Chart(ctx1, {
       type:'bar', data:{ labels:sorted.map(u=>(u.name||u.email||'').split(' ')[0]),
         datasets:[{data:sorted.map(u=>userScores[u.id]||0),
-          backgroundColor:sorted.map(u=>scoreColor(userScores[u.id]||0)<i class="ph ph-plus-circle"></i>'99'),
+          backgroundColor:sorted.map(u=>scoreColor(userScores[u.id]||0)+'99'),
           borderColor:sorted.map(u=>scoreColor(userScores[u.id]||0)),
           borderWidth:2,borderRadius:6,borderSkipped:false}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},

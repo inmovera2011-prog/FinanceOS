@@ -1,4 +1,4 @@
-const CACHE = 'financeos-v1';
+const CACHE = 'financeos-v2';
 const ASSETS = [
   '/FinanceOS/',
   '/FinanceOS/index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   '/FinanceOS/js/constants.js',
   '/FinanceOS/js/db.js',
   '/FinanceOS/js/voice.js',
+  '/FinanceOS/js/firebase-config.js',
   '/FinanceOS/manifest.json',
 ];
 
