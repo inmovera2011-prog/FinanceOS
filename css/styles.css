@@ -66,6 +66,7 @@ hr{border:none;border-top:1px solid var(--border);margin:18px 0}
 .loading-bar{width:120px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
 .loading-bar-fill{height:100%;background:var(--primary);border-radius:2px;animation:loadbar 1.5s ease-in-out infinite}
 @keyframes loadbar{0%{width:0;margin-left:0}50%{width:80%;margin-left:0}100%{width:0;margin-left:120px}}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 
 /* ── AUTH PAGE ── */
 #auth-wrap{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:900;overflow-y:auto;padding:20px}
