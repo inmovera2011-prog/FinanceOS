@@ -22,6 +22,29 @@
   <div class="fs-xs text-3" id="loading-msg">Verificando sesión...</div>
 </div>
 
+<!-- ═══ PWA INSTALL OVERLAY ═══ -->
+<div id="pwa-install" class="hidden" style="position:fixed;inset:0;background:var(--bg);display:flex;z-index:10000;align-items:center;justify-content:center;padding:24px">
+  <div style="text-align:center;max-width:360px">
+    <div style="font-size:3rem;font-weight:900;color:var(--primary);margin-bottom:4px">Finance<span style="color:var(--text2);font-weight:400">OS</span></div>
+    <div style="color:var(--text3);font-size:.85rem;margin-bottom:24px">Gesti&oacute;n financiera personal</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px">
+      <i class="ph ph-download-simple" style="font-size:2.5rem;color:var(--primary);display:block;margin-bottom:12px"></i>
+      <div style="font-size:1rem;font-weight:700;margin-bottom:6px">Instal&aacute; la app</div>
+      <div style="color:var(--text2);font-size:.82rem;line-height:1.5;margin-bottom:16px">
+        FinanceOS funciona como app instalada. Us&aacute; el men&uacute; del navegador para agregarla a tu pantalla de inicio.
+      </div>
+      <div id="pwa-install-btn" style="display:none;flex-direction:column;gap:8px;margin-bottom:12px">
+        <button class="btn btn-primary btn-block" id="pwa-install-btn-actual" onclick="installPWA()"><i class="ph ph-download-simple"></i> Instalar</button>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px;text-align:left;font-size:.75rem;color:var(--text2)">
+        <div style="font-weight:700;margin-bottom:6px">Pasos:</div>
+        <div id="pwa-steps-browser">1. Toc&aacute; ⋮ (men&uacute;) <br>2. <strong>Instalar app</strong> o <strong>Agregar a pantalla de inicio</strong></div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:16px" onclick="document.getElementById('pwa-install').style.display='none';document.getElementById('auth-wrap').classList.add('hidden');document.getElementById('pwa-install').classList.add('hidden');document.getElementById('pwa-install').style.display='none'">Cerrar</button>
+  </div>
+</div>
+
 <!-- ═══ AUTH ═══ -->
 <div id="auth-wrap">
   <div class="auth-wrap">
@@ -103,6 +126,33 @@
 <script type="module">
 import { routeByRole, loginWithEmail, loginWithGoogle,
          registerUser, resetPassword, checkAuthAndRoute } from './js/auth.js';
+
+// ── PWA: bloquear si no está instalada ──
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                  || window.navigator.standalone
+                  || window.matchMedia('(display-mode: minimal-ui)').matches;
+if (!isStandalone) {
+  document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('pwa-install').classList.remove('hidden');
+  if ('onbeforeinstallprompt' in window) {
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      window._installPrompt = e;
+      const btn = document.getElementById('pwa-install-btn');
+      btn.style.display = 'flex';
+    });
+  }
+  window.installPWA = async () => {
+    const e = window._installPrompt;
+    if (!e) return;
+    e.prompt();
+    const res = await e.userChoice;
+    if (res.outcome === 'accepted') {
+      document.getElementById('pwa-install').style.display = 'none';
+    }
+  };
+  throw new Error('Install PWA'); // detener ejecución
+}
 
 // ── Verificar si ya hay sesi&oacute;n activa ──
 const profile = await checkAuthAndRoute();
