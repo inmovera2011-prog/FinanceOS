@@ -6,6 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f172a">
 <title>FinanceOS</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="css/styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2.1.1/css/phosphor-icons.min.css">
@@ -189,6 +192,9 @@ function setBusyAuth(id, busy) {
   b.disabled=busy;
   if(!b._orig) b._orig=b.textContent;
   b.innerHTML=busy?'<span class="spinner"></span> Procesando...':b._orig;
+}
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 function friendlyErrAuth(err) {
   const code = err?.code;
