@@ -136,6 +136,7 @@ if (!isStandalone) {
   window.installPWA = async () => {
     const e = window._installPrompt;
     if (e) { e.prompt(); const r = await e.userChoice; if (r.outcome === 'accepted') dismissPWA(); }
+    else dismissPWA();
   };
   window.dismissPWA = () => {
     document.getElementById('pwa-install').style.display = 'none';
